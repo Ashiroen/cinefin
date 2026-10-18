@@ -99,8 +99,6 @@ export function DetailsScreen({
             <Focusable id="start" className="btn" onSelect={onPlayFromStart}>
               Play from start
             </Focusable>
-          </div>
-          <div className="actions">
             <Focusable id="audio" className="picker-btn" onSelect={onTogglePicker}>
               <span>
                 <div className="picker-label">Audio</div>

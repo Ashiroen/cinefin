@@ -229,8 +229,8 @@ export function WizardSummary({
           {rows.map(([a, b, c]) => (
             <div
               key={a}
-              className="format-row"
-              style={{ gridTemplateColumns: '1fr 280px 1fr', background: 'var(--surface)' }}
+              className="format-row wizard-row"
+              style={{ background: 'var(--surface)' }}
             >
               <div>{a}</div>
               <div

@@ -179,7 +179,7 @@ export function HomeScreen({
           ) : null}
           {home.libraries.map((lib, li) => (
             <div className="row" key={lib.id} data-row={li === 0 ? 'movies' : `lib-${li}`}>
-              <div className="row-title">
+              <div className="row-title row-title-posters">
                 {lib.name}
                 <span className="caption" style={{ marginLeft: 10 }}>
                   {lib.items.length} titles

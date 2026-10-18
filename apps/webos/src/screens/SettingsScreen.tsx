@@ -126,13 +126,10 @@ function Section({
 }) {
   return (
     <div style={{ marginTop: 28 }}>
-      <div
-        className="section-label"
-        style={{ display: 'grid', gridTemplateColumns: extra ? '280px 200px 1fr 240px' : '280px 200px 1fr' }}
-      >
-        <span>{title}</span>
-        <span />
-        <span />
+      <div className="section-label" style={{ display: 'flex', gap: 16 }}>
+        <span style={{ flex: '0 0 280px' }}>{title}</span>
+        <span style={{ flex: '0 0 200px' }} />
+        <span style={{ flex: 1 }} />
         {extra ? <span>{extra}</span> : null}
       </div>
       {children}
@@ -169,25 +166,21 @@ function FormatLine({
       onSelect={converted ? onConvert : onWizard}
       style={{ width: '100%', textAlign: 'left' }}
     >
-      <div>{row.label}</div>
+      <div className="format-label">{row.label}</div>
       <span className={`status-chip ${chipClass(row.status)}`}>{statusLabel(row.status)}</span>
       <div className="why">
         {sourceCaption(row)}
         {row.reason ? <div style={{ marginTop: 4 }}>{row.reason}</div> : null}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+      <div className="format-row-actions">
         {converted ? (
-          <span className="btn" style={{ minHeight: 48, fontSize: 22 }}>
+          <span className="btn convert-pill">
             {row.convertTo === 'auto' || !row.convertTo
               ? 'Best confirmed'
               : CONVERT_TARGETS[auto].label}
           </span>
         ) : null}
-        {is ? (
-          <span className="btn" style={{ minHeight: 48, fontSize: 22 }}>
-            Test again
-          </span>
-        ) : null}
+        {is ? <span className="btn convert-pill">Test again</span> : null}
       </div>
     </Focusable>
   );

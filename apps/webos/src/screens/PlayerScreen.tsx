@@ -188,15 +188,7 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
             <div key={r.k} className="state-card">
               <div>
                 <div className="kicker">{r.k}</div>
-                <div
-                  style={{
-                    marginTop: 10,
-                    background: r.c,
-                    borderRadius: 12,
-                    padding: '12px 16px',
-                    fontWeight: 600,
-                  }}
-                >
+                <div className="state-chip" style={{ background: r.c }}>
                   {r.t}
                 </div>
               </div>
