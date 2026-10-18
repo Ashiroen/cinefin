@@ -646,6 +646,8 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         onHero={() => undefined}
         onOpen={() => undefined}
         onSettings={() => undefined}
+        initialFocus={board === '01b' ? 'lib-0-0' : undefined}
+        scrolled={board === '01b'}
       />
     );
   }
@@ -686,8 +688,9 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         videoRef={videoRef}
         overlay
         onToggleOverlay={() => undefined}
-        current={12 * 60 + 40}
-        duration={12 * 60 + 40 + 65 * 60 + 20}
+        current={1 * 3600 + 12 * 60 + 40}
+        duration={2 * 3600 + 18 * 60}
+        wallNow={new Date('2024-01-01T12:40:40')}
         paused={false}
         onPause={() => undefined}
         onSeek={() => undefined}

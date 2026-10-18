@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
+import { IconReplay } from '../components/Icons';
 
 function Chrome({
   step,
@@ -51,14 +52,14 @@ export function WizardDetect({
               Here's what we found over HDMI eARC. The test on the next step confirms it.
             </p>
             <div className="server-card" style={{ width: '100%', marginBottom: 12 }}>
-              <span>✓</span>
+              <span className="glyph-orb">✓</span>
               <span>
                 <div className="name">Connected over HDMI eARC</div>
                 <div className="sub">ONKYO TX-NR7100 · reported by the TV</div>
               </span>
             </div>
             <div className="server-card" style={{ width: '100%', marginBottom: 12, height: 'auto', padding: '18px 28px' }}>
-              <span>♪</span>
+              <span className="glyph-orb">♪</span>
               <span>
                 <div className="name">Dolby · sent to receiver · to be confirmed by the test</div>
                 <div className="sub" style={{ display: 'flex', gap: 8, marginTop: 8 }}>
@@ -68,8 +69,11 @@ export function WizardDetect({
                 </div>
               </span>
             </div>
-            <div className="server-card" style={{ width: '100%', height: 'auto', padding: '18px 28px' }}>
-              <span>ℹ</span>
+            <div
+              className="server-card info-tint"
+              style={{ width: '100%', height: 'auto', padding: '18px 28px' }}
+            >
+              <span className="glyph-orb">ℹ</span>
               <span>
                 <div className="name">
                   DTS, DTS-HD MA, DTS:X · {convertLabel ?? 'Not tested yet'}
@@ -135,8 +139,22 @@ export function WizardTest({
           <p className="muted" style={{ marginBottom: 28, maxWidth: 880 }}>
             We're playing a Dolby TrueHD Atmos test clip. Look at the receiver's front display and pick what it shows.
           </p>
-          <div className="banner" style={{ width: 880, marginBottom: 28 }}>
-            <span>Test clip · TrueHD Atmos 7.1.4 · 0:06 / 0:20</span>
+          <div className="meter" style={{ marginBottom: 28 }}>
+            <div className="meter-bars" aria-hidden>
+              <i style={{ height: '38%' }} />
+              <i style={{ height: '70%' }} />
+              <i style={{ height: '100%' }} />
+              <i style={{ height: '62%' }} />
+              <i style={{ height: '84%' }} />
+              <i style={{ height: '46%' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600 }}>Test clip · TrueHD Atmos 7.1.4</div>
+              <div className="progress-line" style={{ margin: '10px 0 8px' }}>
+                <i style={{ width: '30%' }} />
+              </div>
+              <div className="caption">0:06 / 0:20</div>
+            </div>
           </div>
           <div className="fmt-grid">
             {formats.map((f) => (
@@ -149,7 +167,8 @@ export function WizardTest({
                 {f}
               </Focusable>
             ))}
-            <Focusable id="again" className="btn fmt-btn" onSelect={onAgain}>
+            <Focusable id="again" className="btn fmt-btn btn-outline" onSelect={onAgain}>
+              <IconReplay />
               Play again
             </Focusable>
           </div>
@@ -214,8 +233,10 @@ export function WizardSummary({
               style={{ gridTemplateColumns: '1fr 280px 1fr', background: 'var(--surface)' }}
             >
               <div>{a}</div>
-              <div className={`status-dot ${b === 'Untested' ? 'warn' : ''}`}>
-                <i /> {b}
+              <div
+                className={`status-chip ${b === 'Untested' ? 'untested' : b === 'Converted' ? 'converted' : 'direct'}`}
+              >
+                {b}
               </div>
               <div className="why">{c}</div>
             </div>
@@ -232,9 +253,12 @@ export function WizardSummary({
               {dtsDone ? ` Result after the check: ${dtsFormat}` : ''}
             </span>
           </div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 36, alignItems: 'flex-start' }}>
+          <p className="muted" style={{ marginTop: 20, maxWidth: 1100 }}>
+            If you picked Dolby Digital or PCM in a test, that format is marked Converted. If it still plays, just untouched.
+          </p>
+          <div style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'flex-start' }}>
             <div>
-              <Focusable id="finish" className="btn" disabled={!dtsDone} onSelect={onFinish}>
+              <Focusable id="finish" className="btn btn-finish" disabled={!dtsDone} onSelect={onFinish}>
                 Finish
               </Focusable>
               {!dtsDone ? (

@@ -1,6 +1,6 @@
 import { formatClock, formatRuntime, ticksToSeconds } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
-import { Logo } from '../components/Logo';
+import { IconSearch, IconSettings } from '../components/Icons';
 import type { CatalogItem, MediaStreamLite } from '../data/jellyfin';
 import { imageUrl } from '../data/jellyfin';
 import { cast as fixtureCast } from '../preview/fixtures';
@@ -36,17 +36,12 @@ export function DetailsScreen({
   return (
     <FocusRoot initial={pickerOpen && current ? `track-${current.index}` : 'play'}>
       <div className="screen screen-fill">
-        <div className="top-bar">
-          <Logo size={34} />
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Focusable id="search" className="icon-btn">
-              ⌕
-            </Focusable>
-            <Focusable id="settings" className="icon-btn" onSelect={onSettings}>
-              ⚙
-            </Focusable>
-          </div>
-        </div>
+        <Focusable id="search" className="icon-btn icon-search">
+          <IconSearch />
+        </Focusable>
+        <Focusable id="settings" className="icon-btn icon-settings" onSelect={onSettings}>
+          <IconSettings />
+        </Focusable>
         <div className="details">
           <h1 className="h1 h1-lg">{item.name}</h1>
           <div className="meta" style={{ marginTop: 12 }}>
@@ -83,17 +78,38 @@ export function DetailsScreen({
             </div>
           ) : null}
           <div className="actions">
-            <Focusable id="play" className="btn" onSelect={onPlay}>
-              ▶ {canResume ? `Resume from ${formatClock(ticksToSeconds(pos))}` : 'Play'}
+            <Focusable
+              id="play"
+              className={`btn ${canResume ? 'resume-btn' : ''}`}
+              onSelect={onPlay}
+            >
+              {canResume ? (
+                <>
+                  <span>Resume</span>
+                  <span className="caption">from {formatClock(ticksToSeconds(pos))}</span>
+                </>
+              ) : (
+                <>▶ Play</>
+              )}
             </Focusable>
             <Focusable id="start" className="btn" onSelect={onPlayFromStart}>
               Play from start
             </Focusable>
-            <Focusable id="audio" className="btn" onSelect={onTogglePicker}>
-              {current ? current.displayTitle ?? current.codec : 'Audio'}
+          </div>
+          <div className="actions">
+            <Focusable id="audio" className="picker-btn" onSelect={onTogglePicker}>
+              <span>
+                <div className="picker-label">Audio</div>
+                <div className="picker-value">{current ? current.displayTitle ?? current.codec : 'Audio'}</div>
+              </span>
+              <span className="muted">›</span>
             </Focusable>
-            <Focusable id="subs" className="btn">
-              Off
+            <Focusable id="subs" className="picker-btn">
+              <span>
+                <div className="picker-label">Subtitles</div>
+                <div className="picker-value">Off</div>
+              </span>
+              <span className="muted">›</span>
             </Focusable>
           </div>
           <div className="section-label">Cast & crew</div>

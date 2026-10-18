@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { ticksToSeconds, formatRuntime } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
+import { IconSearch, IconSettings } from '../components/Icons';
 import type { CatalogItem, HomeModel } from '../data/jellyfin';
 import { imageUrl } from '../data/jellyfin';
 
@@ -43,7 +45,7 @@ function Poster({
           />
         ) : null}
         <div className="poster-fill" />
-        <div className="poster-title">{item.name}</div>
+        {!portrait ? <div className="poster-title">{item.name}</div> : null}
         {progress > 0 && progress < 0.95 ? (
           <div className="poster-progress">
             <i style={{ width: `${Math.round(progress * 100)}%` }} />
@@ -59,6 +61,8 @@ function Poster({
             ? ` · ${Math.max(1, Math.round(ticksToSeconds((item.runtimeTicks ?? 0) - item.userData.positionTicks) / 60))} min left`
             : ''}
         </div>
+      ) : portrait ? (
+        <div className="card-meta">{item.name}</div>
       ) : null}
     </div>
   );
@@ -71,6 +75,8 @@ export function HomeScreen({
   onOpen,
   onSearch,
   onSettings,
+  initialFocus,
+  scrolled,
 }: {
   home: HomeModel;
   hero: CatalogItem | null;
@@ -78,23 +84,34 @@ export function HomeScreen({
   onOpen: (item: CatalogItem) => void;
   onSearch?: () => void;
   onSettings: () => void;
+  initialFocus?: string;
+  scrolled?: boolean;
 }) {
   const h = hero ?? home.resume[0] ?? home.libraries[0]?.items[0] ?? null;
-  const firstId = home.resume[0] ? 'resume-0' : 'lib-0-0';
+  const firstId = initialFocus ?? (home.resume[0] ? 'resume-0' : 'lib-0-0');
+  const rowsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrolled) return;
+    const rows = rowsRef.current;
+    const next = rows?.querySelector('[data-row="next"]') as HTMLElement | null;
+    const movies = rows?.querySelector('[data-row="movies"]') as HTMLElement | null;
+    if (!rows) return;
+    rows.scrollTop = (next ?? movies)?.offsetTop ?? 0;
+  }, [scrolled, home]);
+
   return (
     <FocusRoot initial={firstId}>
-      <div className="screen screen-fill">
+      <div className="screen screen-fill screen-home">
         <div className="top-bar">
-          <Logo size={34} />
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Focusable id="search" className="icon-btn" onSelect={onSearch}>
-              ⌕
-            </Focusable>
-            <Focusable id="settings" className="icon-btn" onSelect={onSettings}>
-              ⚙
-            </Focusable>
-          </div>
+          <Logo size={50} />
         </div>
+        <Focusable id="search" className="icon-btn icon-search" onSelect={onSearch}>
+          <IconSearch />
+        </Focusable>
+        <Focusable id="settings" className="icon-btn icon-settings" onSelect={onSettings}>
+          <IconSettings />
+        </Focusable>
         {h ? (
           <div className="hero">
             <div className="kicker">
@@ -123,9 +140,9 @@ export function HomeScreen({
             <p className="meta">Add a library on the server, then come back.</p>
           </div>
         )}
-        <div className="rows">
+        <div className="rows" ref={rowsRef} data-testid="home-rows">
           {home.resume.length ? (
-            <div className="row">
+            <div className="row" data-row="resume">
               <div className="row-title">Continue watching</div>
               <div className="row-scroller">
                 {home.resume.map((item, i) => (
@@ -143,7 +160,7 @@ export function HomeScreen({
             </div>
           ) : null}
           {home.nextUp.length ? (
-            <div className="row">
+            <div className="row" data-row="next">
               <div className="row-title">Next up</div>
               <div className="row-scroller">
                 {home.nextUp.map((item, i) => (
@@ -161,14 +178,14 @@ export function HomeScreen({
             </div>
           ) : null}
           {home.libraries.map((lib, li) => (
-            <div className="row" key={lib.id}>
+            <div className="row" key={lib.id} data-row={li === 0 ? 'movies' : `lib-${li}`}>
               <div className="row-title">
                 {lib.name}
                 <span className="caption" style={{ marginLeft: 10 }}>
                   {lib.items.length} titles
                 </span>
               </div>
-              <div className="row-scroller">
+              <div className="row-scroller portrait-row">
                 {lib.items.map((item, i) => (
                   <Poster
                     key={item.id}

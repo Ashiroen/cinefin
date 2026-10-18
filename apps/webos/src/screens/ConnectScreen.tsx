@@ -1,6 +1,7 @@
 import { MIN_SERVER_VERSION_LABEL } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
+import { IconInfo, IconKeyboard } from '../components/Icons';
 import type { PublicServer } from '../data/jellyfin';
 
 export function ConnectScreen({
@@ -36,7 +37,8 @@ export function ConnectScreen({
 
           {none ? (
             <div className="banner" style={{ marginBottom: 36 }}>
-              <div>
+              <IconInfo />
+              <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 24, fontWeight: 600 }}>No servers found on your network</div>
                 <div className="muted" style={{ marginTop: 4 }}>
                   Is the server on the same network as the TV?
@@ -76,9 +78,11 @@ export function ConnectScreen({
             <div className="section-label">
               {none ? 'Enter your server address' : 'Enter address manually'}
             </div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="address-row">
               <Focusable id="address" className="field" style={{ flex: 1 }}>
-                <span className="muted">⌂</span>
+                <span className="muted">
+                  <IconKeyboard />
+                </span>
                 <input
                   data-testid="address"
                   value={address}

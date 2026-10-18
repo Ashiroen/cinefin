@@ -1,7 +1,35 @@
 import type { RefObject } from 'react';
-import { formatClock, outputStateTitle, type PlaybackDecision } from '@cinefin/core';
+import { formatClock, type PlaybackDecision } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import type { CatalogItem } from '../data/jellyfin';
+
+function formatEndsClock(now: Date, remainingSeconds: number): string {
+  const end = new Date(now.getTime() + Math.max(0, remainingSeconds) * 1000);
+  return `${end.getHours()}:${String(end.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatWallClock(now: Date): string {
+  return `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
+function outputChip(decision: PlaybackDecision | null, item: CatalogItem): string {
+  const audio = item.mediaStreams?.find((s) => s.type === 'Audio' && s.isDefault) ??
+    item.mediaStreams?.find((s) => s.type === 'Audio');
+  const title = `${audio?.displayTitle ?? ''} ${audio?.codec ?? ''}`.toLowerCase();
+  if (decision?.output === 'direct' && (title.includes('atmos') || title.includes('truehd'))) {
+    return 'TrueHD Atmos → AVR';
+  }
+  if (decision?.output === 'converted') return 'Converted';
+  if (decision?.output === 'repackaged') return 'Repackaged';
+  if (decision?.output === 'direct') return 'Direct';
+  return '';
+}
+
+function outputSub(item: CatalogItem): string {
+  const video = item.mediaStreams?.find((s) => s.type === 'Video');
+  const codec = (video?.codec ?? 'hevc').toUpperCase();
+  return `${codec} · 23.976 Hz matched`;
+}
 
 export function PlayerScreen({
   item,
@@ -17,6 +45,7 @@ export function PlayerScreen({
   onBack,
   onChapters,
   audioLabel,
+  wallNow,
 }: {
   item: CatalogItem;
   videoRef: RefObject<HTMLVideoElement>;
@@ -31,10 +60,13 @@ export function PlayerScreen({
   onBack: () => void;
   onChapters?: () => void;
   audioLabel?: string;
+  wallNow?: Date;
 }) {
   const pct = duration > 0 ? current / duration : 0;
+  const now = wallNow ?? new Date();
+  const remaining = Math.max(0, duration - current);
   return (
-    <FocusRoot initial="pause">
+    <FocusRoot initial="scrub">
       <div className="screen player-root">
         <video
           ref={videoRef}
@@ -44,9 +76,7 @@ export function PlayerScreen({
         />
         {overlay ? (
           <div className="overlay">
-            <div style={{ position: 'absolute', top: 36, right: 48 }} className="muted">
-              {formatClock(current)}
-            </div>
+            <div className="player-clock">{formatWallClock(now)}</div>
             <div className="kicker" style={{ marginBottom: 8 }}>
               {item.type === 'Episode'
                 ? `S${item.parentIndexNumber ?? 1} E${item.indexNumber ?? 1} · ${item.seriesName ?? item.name}`
@@ -61,20 +91,22 @@ export function PlayerScreen({
                   <div className="muted">The Crossing</div>
                 ) : null}
               </div>
-              <div style={{ textAlign: 'right' }} className="muted">
-                <div>{decision ? `${outputStateTitle(decision.output)}` : ''}</div>
-                <div className="caption" style={{ maxWidth: 420 }}>{decision?.reason}</div>
+              <div style={{ textAlign: 'right' }}>
+                {decision ? <div className="output-chip">{outputChip(decision, item)}</div> : null}
+                <div className="output-sub">{outputSub(item)}</div>
               </div>
             </div>
-            <div className="scrub">
-              <i style={{ width: `${pct * 100}%` }} />
+            <Focusable id="scrub" className="scrub" onSelect={() => undefined}>
+              <span className="scrub-track">
+                <i style={{ width: `${pct * 100}%` }} />
+              </span>
               <span className="scrub-knob" style={{ left: `${pct * 100}%` }} />
-            </div>
+            </Focusable>
             <div style={{ display: 'flex', justifyContent: 'space-between' }} className="muted">
               <span>{formatClock(current)}</span>
               <span>
-                -{formatClock(Math.max(0, duration - current))}
-                {duration ? `  ends ${formatClock(duration)}` : ''}
+                -{formatClock(remaining)}
+                {duration ? `  ends ${formatEndsClock(now, remaining)}` : ''}
               </span>
             </div>
             <div className="transport">
@@ -172,7 +204,12 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
             </div>
           ))}
         </div>
-        <Focusable id="back" className="btn" style={{ marginTop: 28 }} onSelect={onBack}>
+        <Focusable
+          id="back"
+          className="btn"
+          style={{ marginTop: 28, marginLeft: 0 }}
+          onSelect={onBack}
+        >
           Back
         </Focusable>
       </div>

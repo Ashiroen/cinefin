@@ -13,6 +13,7 @@ export default tseslint.config(
       'media/**',
       '.jellyfin-data/**',
       'scripts/verify-browser.mjs',
+      'scripts/capture-screenshots.mjs',
     ],
   },
   js.configs.recommended,

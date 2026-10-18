@@ -9,7 +9,7 @@ import {
   type ConvertTargetId,
   type FormatRow,
 } from '@cinefin/core';
-import { FocusRoot, Focusable } from '../focus/FocusRoot';
+import { FocusRoot, Focusable, useFocus } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
 
 const NAV = [
@@ -25,11 +25,13 @@ export function SettingsPlayback({
   onConvert,
   onWizard,
   onNav,
+  inert,
 }: {
   table: CapabilityTable;
   onConvert: (row: FormatRow) => void;
   onWizard: () => void;
   onNav?: (id: string) => void;
+  inert?: boolean;
 }) {
   const audio = table.rows.filter((r) => r.kind === 'audio');
   const video = table.rows.filter((r) => r.kind === 'video');
@@ -41,63 +43,74 @@ export function SettingsPlayback({
     untested: table.rows.filter((r) => r.status === 'untested').length,
   };
 
-  return (
-    <FocusRoot initial="row-audio.dtshd">
-      <div className="screen screen-fill settings">
-        <aside className="settings-nav">
-          <Logo size={34} />
-          <h1>Settings</h1>
-          {NAV.map((n) => (
-            <Focusable
-              key={n.id}
-              id={`nav-${n.id}`}
-              className={`nav-item ${n.active ? 'active' : ''}`}
-              onSelect={() => {
-                if (n.id === 'receiver') onWizard();
-                else onNav?.(n.id);
-              }}
-            >
-              {n.label}
-            </Focusable>
+  const body = (
+    <div className={`screen screen-fill settings ${inert ? 'is-inert' : ''}`}>
+      <aside className="settings-nav">
+        <Logo size={34} />
+        <h1>Settings</h1>
+        {NAV.map((n) => (
+          <Focusable
+            key={n.id}
+            id={`nav-${n.id}`}
+            className={`nav-item ${n.active ? 'active' : ''}`}
+            onSelect={() => {
+              if (inert) return;
+              if (n.id === 'receiver') onWizard();
+              else onNav?.(n.id);
+            }}
+          >
+            {n.label}
+          </Focusable>
+        ))}
+        <div className="caption" style={{ marginTop: 48 }}>
+          Cinefin on your TV · ONKYO TX-NR7100
+          <br />
+          over HDMI eARC
+        </div>
+      </aside>
+      <main className="settings-main" data-testid="settings-main">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h1 className="h1" style={{ fontSize: 42 }}>
+              What your setup plays
+            </h1>
+            <p className="muted" style={{ marginTop: 8 }}>
+              Direct: {counts.direct} · Repackaged: {counts.repack} · Converted: {counts.conv} · Untested:{' '}
+              {counts.untested}
+            </p>
+          </div>
+          <Focusable id="rerun" className="btn" onSelect={inert ? undefined : onWizard}>
+            Run receiver test again
+          </Focusable>
+        </div>
+        <Section title="Audio" extra="Convert to">
+          {audio.map((row) => (
+            <FormatLine
+              key={row.id}
+              row={row}
+              table={table}
+              onConvert={inert ? undefined : () => onConvert(row)}
+              onWizard={inert ? undefined : onWizard}
+            />
           ))}
-          <div className="caption" style={{ marginTop: 48 }}>
-            Cinefin on your TV · ONKYO TX-NR7100
-            <br />
-            over HDMI eARC
-          </div>
-        </aside>
-        <main className="settings-main">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <h1 className="h1" style={{ fontSize: 42 }}>
-                What your setup plays
-              </h1>
-              <p className="muted" style={{ marginTop: 8 }}>
-                Direct: {counts.direct} · Repackaged: {counts.repack} · Converted: {counts.conv} · Untested:{' '}
-                {counts.untested}
-              </p>
-            </div>
-            <Focusable id="rerun" className="btn" onSelect={onWizard}>
-              Run receiver test again
-            </Focusable>
-          </div>
-          <Section title="Audio" extra="Convert to">
-            {audio.map((row) => (
-              <FormatLine key={row.id} row={row} table={table} onConvert={() => onConvert(row)} />
-            ))}
-          </Section>
-          <Section title="Video">
-            {video.map((row) => (
-              <FormatLine key={row.id} row={row} table={table} />
-            ))}
-          </Section>
-          <Section title="Containers">
-            {containers.map((row) => (
-              <FormatLine key={row.id} row={row} table={table} />
-            ))}
-          </Section>
-        </main>
-      </div>
+        </Section>
+        <Section title="Video">
+          {video.map((row) => (
+            <FormatLine key={row.id} row={row} table={table} onWizard={inert ? undefined : onWizard} />
+          ))}
+        </Section>
+        <Section title="Containers">
+          {containers.map((row) => (
+            <FormatLine key={row.id} row={row} table={table} onWizard={inert ? undefined : onWizard} />
+          ))}
+        </Section>
+      </main>
+    </div>
+  );
+
+  return (
+    <FocusRoot initial={inert ? '__none__' : 'row-audio.dtshd'}>
+      {body}
     </FocusRoot>
   );
 }
@@ -115,7 +128,7 @@ function Section({
     <div style={{ marginTop: 28 }}>
       <div
         className="section-label"
-        style={{ display: 'grid', gridTemplateColumns: extra ? '280px 180px 1fr 220px' : '280px 180px 1fr' }}
+        style={{ display: 'grid', gridTemplateColumns: extra ? '280px 200px 1fr 240px' : '280px 200px 1fr' }}
       >
         <span>{title}</span>
         <span />
@@ -127,39 +140,52 @@ function Section({
   );
 }
 
+function chipClass(status: FormatRow['status']): string {
+  if (status === 'direct' || status === 'sent_to_receiver') return 'direct';
+  if (status === 'converted') return 'converted';
+  if (status === 'repackaged') return 'repackaged';
+  return 'untested';
+}
+
 function FormatLine({
   row,
   table,
   onConvert,
+  onWizard,
 }: {
   row: FormatRow;
   table: CapabilityTable;
   onConvert?: () => void;
+  onWizard?: () => void;
 }) {
-  const warn = row.status === 'converted' || row.status === 'repackaged' || row.status === 'untested';
+  const { focused } = useFocus();
+  const is = focused === `row-${row.id}`;
+  const converted = row.status === 'converted';
   const auto = resolveConvertTo(table, row.convertTo);
   return (
     <Focusable
       id={`row-${row.id}`}
       className="format-row"
-      onSelect={onConvert}
+      onSelect={converted ? onConvert : onWizard}
       style={{ width: '100%', textAlign: 'left' }}
     >
       <div>{row.label}</div>
-      <div className={`status-dot ${warn ? 'warn' : ''}`}>
-        <i />
-        {statusLabel(row.status)}
-      </div>
+      <span className={`status-chip ${chipClass(row.status)}`}>{statusLabel(row.status)}</span>
       <div className="why">
         {sourceCaption(row)}
         {row.reason ? <div style={{ marginTop: 4 }}>{row.reason}</div> : null}
       </div>
-      <div>
-        {row.status === 'converted' || row.convertTo ? (
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        {converted ? (
           <span className="btn" style={{ minHeight: 48, fontSize: 22 }}>
             {row.convertTo === 'auto' || !row.convertTo
               ? 'Best confirmed'
               : CONVERT_TARGETS[auto].label}
+          </span>
+        ) : null}
+        {is ? (
+          <span className="btn" style={{ minHeight: 48, fontSize: 22 }}>
+            Test again
           </span>
         ) : null}
       </div>
@@ -183,7 +209,7 @@ export function ConvertPicker({
   return (
     <FocusRoot initial="opt-auto">
       <div className="screen">
-        <SettingsPlayback table={table} onConvert={() => undefined} onWizard={() => undefined} />
+        <SettingsPlayback inert table={table} onConvert={() => undefined} onWizard={() => undefined} />
         <div className="modal-back">
           <div className="modal">
             <h1 className="h1" style={{ fontSize: 36, marginBottom: 8 }}>
@@ -200,20 +226,27 @@ export function ConvertPicker({
             </Focusable>
             {(['pcm', 'eac3', 'ac3'] as ConvertTargetId[]).map((id) => {
               const ok = confirmed.includes(id);
+              if (!ok) {
+                return (
+                  <div key={id} className="pick-row is-muted" aria-disabled>
+                    <div>
+                      <div className="t">{CONVERT_TARGETS[id].label}</div>
+                      <div className="s">Untested · run receiver test</div>
+                    </div>
+                    <span className="pill-outline">Run test</span>
+                  </div>
+                );
+              }
               return (
                 <Focusable
                   key={id}
                   id={`opt-${id}`}
                   className="pick-row"
-                  onSelect={() => (ok ? onPick(id) : undefined)}
+                  onSelect={() => onPick(id)}
                 >
                   <div className="t">{CONVERT_TARGETS[id].label}</div>
                   <div className="s">
-                    {ok
-                      ? id === 'pcm'
-                        ? 'Multichannel · confirmed by test'
-                        : 'Confirmed by test'
-                      : 'Untested · run receiver test'}
+                    {id === 'pcm' ? 'Multichannel · confirmed by test' : 'Confirmed by test'}
                   </div>
                 </Focusable>
               );

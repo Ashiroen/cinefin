@@ -123,6 +123,12 @@ export function Focusable({
     return () => register(id, null);
   }, [id, register, disabled]);
 
+  useEffect(() => {
+    if (!is || !ref.current) return;
+    const input = ref.current.querySelector('input');
+    if (input && document.activeElement !== input) input.focus();
+  }, [is]);
+
   return (
     <button
       ref={ref}

@@ -1,5 +1,6 @@
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
+import { IconLock } from '../components/Icons';
 import type { PublicUser } from '../data/jellyfin';
 
 const ORB = ['#6b4a32', '#4a3a52', '#2f4a36', '#2a3a4a', '#2a2a2e'];
@@ -36,10 +37,11 @@ export function QuickConnectScreen({
               </div>
             ))}
           </div>
-          <p className="meta" style={{ marginBottom: 48, textAlign: 'center', maxWidth: 720 }}>
+          <p className="qc-help" style={{ marginBottom: 40 }}>
             On your phone or computer, open Jellyfin › Quick Connect and enter this code.
           </p>
-          <p className="muted" style={{ marginBottom: 28 }}>
+          <p className="muted" style={{ marginBottom: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span className="spinner" aria-hidden />
             Waiting for approval · Code refreshes in {remaining}
           </p>
           <Focusable id="password" className="btn btn-wide" onSelect={onPassword}>
@@ -87,7 +89,7 @@ export function PasswordScreen({
   const current = users.find((u) => u.id === selected);
   const other = selected === 'other' || users.length === 0;
   return (
-    <FocusRoot initial={users[0] ? `user-${users[0].id}` : 'username'}>
+    <FocusRoot initial="password">
       <div className="screen">
         <div className="top-bar">
           <Logo size={36} />
@@ -119,11 +121,11 @@ export function PasswordScreen({
               <div>Other user</div>
             </Focusable>
           </div>
-          <div style={{ width: 720 }}>
+          <div style={{ width: 800 }}>
             {other ? (
               <>
                 <div className="section-label">Username</div>
-                <Focusable id="username" className="field" style={{ marginBottom: 16 }}>
+                <Focusable id="username" className="field field-lg" style={{ marginBottom: 16 }}>
                   <span>☺</span>
                   <input
                     data-testid="username"
@@ -140,8 +142,8 @@ export function PasswordScreen({
             <div className="section-label">
               Password for {other ? username || 'user' : current?.name ?? 'user'}
             </div>
-            <Focusable id="password" className="field" style={{ marginBottom: 16 }}>
-              <span>🔒</span>
+            <Focusable id="password" className="field field-lg" style={{ marginBottom: 16 }}>
+              <IconLock />
               <input
                 data-testid="password"
                 type="password"
