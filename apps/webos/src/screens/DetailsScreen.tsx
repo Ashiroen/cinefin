@@ -59,10 +59,11 @@ export function DetailsScreen({
               .join(' · ')}
           </div>
           <div className="badge-row">
-            <span className="badge">Dolby Vision</span>
-            <span className="badge">HDR10</span>
-            <span className="badge">Dolby Atmos</span>
-            <span className="badge">TrueHD 7.1</span>
+            {badgesFor(item).map((b) => (
+              <span className="badge" key={b}>
+                {b}
+              </span>
+            ))}
           </div>
           {item.overview ? (
             <p className="synopsis" style={{ maxWidth: 880 }}>
@@ -133,6 +134,26 @@ export function DetailsScreen({
       </div>
     </FocusRoot>
   );
+}
+
+function badgesFor(item: CatalogItem): string[] {
+  if (item.badges?.length) return item.badges;
+  const out: string[] = [];
+  const streams = item.mediaStreams ?? [];
+  const video = streams.find((s) => s.type === 'Video');
+  const range = (video?.videoRangeType ?? '').toLowerCase();
+  if (range.includes('dovi') || range.includes('dolby')) out.push('Dolby Vision');
+  if (range.includes('hdr10+')) out.push('HDR10+');
+  else if (range.includes('hdr')) out.push('HDR10');
+  if ((video?.width ?? 0) >= 3800) out.push('4K');
+  for (const a of streams.filter((s) => s.type === 'Audio')) {
+    const title = `${a.displayTitle ?? ''} ${a.codec ?? ''}`.toLowerCase();
+    if (title.includes('atmos')) out.push('Dolby Atmos');
+    if (title.includes('truehd')) out.push('TrueHD 7.1');
+    if (title.includes('dts:x') || title.includes('dtsx')) out.push('DTS:X');
+    else if (title.includes('dts-hd') || title.includes('dtshd')) out.push('DTS-HD');
+  }
+  return [...new Set(out)];
 }
 
 function AudioPicker({

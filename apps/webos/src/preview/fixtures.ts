@@ -55,6 +55,7 @@ export const longMeridian: CatalogItem = movie('meridian', 'The Long Meridian', 
   officialRating: 'PG-13',
   genres: ['Drama', 'Mystery'],
   communityRating: 7.8,
+  badges: ['Dolby Vision', 'HDR10', 'Dolby Atmos', 'TrueHD 7.1'],
   seriesName: 'The Long Meridian',
   parentIndexNumber: 1,
   indexNumber: 5,
@@ -119,6 +120,7 @@ export const glassValley = movie('glass', 'Glass Valley', {
   year: 2023,
   officialRating: 'R',
   genres: ['Thriller'],
+  badges: ['4K', 'HDR10', 'DTS:X'],
 });
 
 export const homeFixture: HomeModel = {

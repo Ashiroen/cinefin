@@ -28,6 +28,27 @@ export function normalizeCodec(codec: string): string {
   return codec.toLowerCase().replace(/[^a-z0-9+]/g, '');
 }
 
+/**
+ * Jellyfin reports MP4 as `mov,mp4,m4a,3gp,3g2,mj2`. Pick the first
+ * container the decision engine understands.
+ */
+export function normalizeContainer(raw: string): string {
+  const parts = raw
+    .toLowerCase()
+    .split(/[,\s/]+/)
+    .map((p) => p.replace(/[^a-z0-9]/g, ''))
+    .filter(Boolean);
+  const preferred = ['mp4', 'm4v', 'mkv', 'matroska', 'webm', 'ts', 'mpegts', 'm2ts', 'mov'];
+  for (const want of preferred) {
+    if (parts.includes(want)) {
+      if (want === 'matroska') return 'mkv';
+      if (want === 'mpegts') return 'ts';
+      return want;
+    }
+  }
+  return parts[0] ?? normalizeCodec(raw);
+}
+
 export function applyOverrides(
   table: CapabilityTable,
   overrides: ReceiverOverrides | undefined,

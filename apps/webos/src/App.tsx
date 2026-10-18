@@ -81,6 +81,8 @@ export function App() {
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(false);
   const [decision, setDecision] = useState<PlaybackDecision | null>(null);
+  const [playUrl, setPlayUrl] = useState<string | null>(null);
+  const [startAt, setStartAt] = useState(0);
   const playRef = useRef<{ itemId: string; mediaSourceId: string; playSessionId: string } | null>(
     null,
   );
@@ -235,16 +237,11 @@ export function App() {
           mediaSourceId: opened.mediaSourceId,
           playSessionId: opened.playSessionId,
         };
+        setPlayUrl(opened.url);
+        setStartAt(
+          fromStart ? 0 : (item.userData?.positionTicks ?? 0) / 10_000_000,
+        );
         go({ name: 'player', id });
-        requestAnimationFrame(() => {
-          const v = videoRef.current;
-          if (!v) return;
-          v.src = opened.url;
-          if (!fromStart && item.userData?.positionTicks) {
-            v.currentTime = item.userData.positionTicks / 10_000_000;
-          }
-          void v.play();
-        });
         void reportPlaying({
           itemId: id,
           mediaSourceId: opened.mediaSourceId,
@@ -261,6 +258,21 @@ export function App() {
     }
     go({ name: 'player', id });
   }
+
+  useEffect(() => {
+    if (route.name !== 'player' || !playUrl) return;
+    const apply = () => {
+      const v = videoRef.current;
+      if (!v) return false;
+      if (v.src !== playUrl) v.src = playUrl;
+      if (startAt > 0 && Math.abs(v.currentTime - startAt) > 1) v.currentTime = startAt;
+      void v.play().catch(() => undefined);
+      return true;
+    };
+    if (apply()) return;
+    const id = window.requestAnimationFrame(() => apply());
+    return () => window.cancelAnimationFrame(id);
+  }, [route, playUrl, startAt]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -408,6 +420,10 @@ export function App() {
           if (v) v.currentTime = Math.max(0, v.currentTime + d);
         }}
         decision={decision}
+        audioLabel={
+          item.mediaStreams?.find((s) => s.type === 'Audio' && (audioIndex === undefined || s.index === audioIndex))
+            ?.displayTitle
+        }
         onBack={() => {
           const p = playRef.current;
           if (p && getSession().account) {

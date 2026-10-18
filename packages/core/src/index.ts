@@ -22,6 +22,7 @@ export {
   findRow,
   findRowByCodec,
   normalizeCodec,
+  normalizeContainer,
   applyOverrides,
   isPlayable,
   listConfirmedConvertTargets,

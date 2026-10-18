@@ -13,5 +13,6 @@ describe('time helpers', () => {
   it('formats board-style runtimes', () => {
     expect(formatRuntime(2 * 3600 + 18 * 60)).toBe('2h 18m');
     expect(formatRuntime(54 * 60)).toBe('54m');
+    expect(formatRuntime(6)).toBe('6s');
   });
 });

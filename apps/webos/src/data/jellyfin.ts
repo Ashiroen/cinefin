@@ -8,6 +8,7 @@ import {
   type CapabilityTable,
   type ItemMedia,
   type PlaybackDecision,
+  normalizeContainer,
 } from '@cinefin/core';
 import { Jellyfin } from '@jellyfin/sdk';
 import { getSystemApi } from '@jellyfin/sdk/lib/utils/api/system-api';
@@ -56,6 +57,7 @@ export interface CatalogItem {
   parentIndexNumber?: number;
   imageTag?: string;
   backdropTag?: string;
+  badges?: string[];
   container?: string;
   mediaStreams?: MediaStreamLite[];
   userData?: { positionTicks?: number; played?: boolean };
@@ -301,7 +303,7 @@ export function itemToMedia(
   if (prof.includes('08') || prof.includes('profile 8')) doviProfile = 8;
   if (prof.includes('10') || prof.includes('profile 10')) doviProfile = 10;
   return {
-    container: item.container ?? 'mkv',
+    container: normalizeContainer(item.container ?? 'mkv'),
     video: {
       codec: video.codec ?? 'hevc',
       range: range.includes('dovi') || range.includes('dolby')

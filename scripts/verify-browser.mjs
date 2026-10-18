@@ -169,7 +169,16 @@ await shot('live-04-details');
 const play = await page.$('[data-focusable="play"]');
 if (play) {
   await play.click();
-  await new Promise((r) => setTimeout(r, 2000));
+  await page
+    .waitForFunction(
+      () => {
+        const v = document.querySelector('video');
+        return Boolean(v && (v.currentSrc || v.readyState > 0) && !v.error);
+      },
+      { timeout: 10000 },
+    )
+    .catch(() => notes.push('Video never started'));
+  await new Promise((r) => setTimeout(r, 800));
 }
 await shot('live-05-player');
 notes.push(`hash after play: ${await page.evaluate(() => location.hash)}`);

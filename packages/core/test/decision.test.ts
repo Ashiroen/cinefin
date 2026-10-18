@@ -214,6 +214,18 @@ describe('decidePlayback · LG C2 webOS 22', () => {
     },
   );
 
+  it('treats Jellyfin multi-token MP4 containers as direct play', () => {
+    const media = hevcMovie({
+      container: 'mov,mp4,m4a,3gp,3g2,mj2',
+      video: { codec: 'h264', range: 'sdr' },
+      audio: { codec: 'aac', channels: 2 },
+    });
+    const decision = decidePlayback(media, table);
+    expect(decision.playMethod).toBe('DirectPlay');
+    expect(decision.output).toBe('direct');
+    expect(decision.containerAction).toBe('keep');
+  });
+
   it('when DTS and DV-in-MKV both apply, the badge is Converted (audio wins) and we still remux', () => {
     const media = hevcMovie({
       container: 'mkv',

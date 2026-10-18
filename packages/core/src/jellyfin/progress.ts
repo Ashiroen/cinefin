@@ -28,5 +28,6 @@ export function formatRuntime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.round((seconds % 3600) / 60);
   if (h > 0) return `${h}h ${m}m`;
+  if (m < 1) return `${Math.max(1, Math.round(seconds))}s`;
   return `${m}m`;
 }

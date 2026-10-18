@@ -16,6 +16,7 @@ export function PlayerScreen({
   decision,
   onBack,
   onChapters,
+  audioLabel,
 }: {
   item: CatalogItem;
   videoRef: RefObject<HTMLVideoElement>;
@@ -29,6 +30,7 @@ export function PlayerScreen({
   decision: PlaybackDecision | null;
   onBack: () => void;
   onChapters?: () => void;
+  audioLabel?: string;
 }) {
   const pct = duration > 0 ? current / duration : 0;
   return (
@@ -77,7 +79,7 @@ export function PlayerScreen({
             </div>
             <div className="transport">
               <Focusable id="audio" className="btn">
-                English · Atmos
+                {audioLabel ?? 'English · Atmos'}
               </Focusable>
               <Focusable id="subs" className="btn">
                 Subtitles off

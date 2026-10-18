@@ -4,6 +4,7 @@ import {
   findRowByCodec,
   isPlayable,
   normalizeCodec,
+  normalizeContainer,
   resolveConvertTo,
 } from '../capabilities/lookup';
 import type {
@@ -34,7 +35,7 @@ export function decidePlayback(
   table: CapabilityTable,
   convertPreference?: 'auto' | ConvertTargetId,
 ): PlaybackDecision {
-  const container = normalizeCodec(media.container);
+  const container = normalizeContainer(media.container);
   const videoCodec = normalizeCodec(media.video.codec);
   const isDovi = media.video.range === 'dovi' || Boolean(media.video.doviProfile);
   const doviProfile = media.video.doviProfile;
