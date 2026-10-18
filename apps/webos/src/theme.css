@@ -99,6 +99,11 @@ input {
   transform-origin: center center;
 }
 
+.row-scroller > :first-child .poster,
+.row-scroller > :first-child.poster {
+  transform-origin: left center;
+}
+
 .field.is-focused {
   transform: scale(1.03);
 }
