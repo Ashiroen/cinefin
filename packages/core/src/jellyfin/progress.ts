@@ -21,3 +21,12 @@ export function formatClock(seconds: number): string {
   }
   return `${sign}${m}:${String(sec).padStart(2, '0')}`;
 }
+
+/** Board-style runtime: "2h 18m" / "54m". */
+export function formatRuntime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.round((seconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}

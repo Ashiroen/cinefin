@@ -521,10 +521,10 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const media = useMemo(
     () =>
-      itemToMedia(longMeridian, 2) ?? {
+      itemToMedia(longMeridian, 1) ?? {
         container: 'mkv',
         video: { codec: 'hevc', range: 'hdr10' as const },
-        audio: { codec: 'dtshd', channels: 8 },
+        audio: { codec: 'truehd', channels: 8, isAtmos: true },
       },
     [],
   );

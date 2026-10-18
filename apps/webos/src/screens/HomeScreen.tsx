@@ -1,4 +1,4 @@
-import { ticksToSeconds, formatClock } from '@cinefin/core';
+import { ticksToSeconds, formatRuntime } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
 import type { CatalogItem, HomeModel } from '../data/jellyfin';
@@ -106,7 +106,12 @@ export function HomeScreen({
             </div>
             <h1 className="h1 h1-lg">{h.name}</h1>
             <div className="meta">
-              {[h.year, h.runtimeTicks ? formatClock(ticksToSeconds(h.runtimeTicks)).replace(/^0:/, '') : null, h.officialRating, h.genres?.[0]]
+              {[
+                h.year,
+                h.runtimeTicks ? formatRuntime(ticksToSeconds(h.runtimeTicks)) : null,
+                h.officialRating,
+                h.genres?.[0],
+              ]
                 .filter(Boolean)
                 .join(' · ')}
             </div>

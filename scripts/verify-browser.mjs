@@ -141,7 +141,17 @@ try {
   );
   notes.push(`Sign-in did not reach Home${err ? ` (${err})` : ''}`);
 }
-await new Promise((r) => setTimeout(r, 800));
+try {
+  await page.waitForFunction(
+    () =>
+      Boolean(document.querySelector('[data-focusable^="lib-"], [data-focusable^="resume-"]')) ||
+      document.body.innerText.includes('Your library is empty'),
+    { timeout: 10000 },
+  );
+} catch {
+  notes.push('Home never rendered a row or empty state');
+}
+await new Promise((r) => setTimeout(r, 400));
 await shot('live-03-home');
 notes.push(`hash after signin: ${await page.evaluate(() => location.hash)}`);
 notes.push(`home text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 400)}`);
@@ -149,7 +159,10 @@ notes.push(`home text: ${(await page.evaluate(() => document.body.innerText)).sl
 const card = await page.$('[data-focusable^="lib-"], [data-focusable^="resume-"]');
 if (card) {
   await card.click();
-  await new Promise((r) => setTimeout(r, 800));
+  await page.waitForFunction(() => location.hash.includes('item'), { timeout: 8000 }).catch(() => {
+    notes.push('Poster click did not open Details');
+  });
+  await new Promise((r) => setTimeout(r, 600));
 }
 await shot('live-04-details');
 

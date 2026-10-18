@@ -11,6 +11,7 @@ export default tseslint.config(
       'apps/webos/service/**',
       'brand/**',
       'media/**',
+      '.jellyfin-data/**',
       'scripts/verify-browser.mjs',
     ],
   },

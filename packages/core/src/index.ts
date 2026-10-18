@@ -54,6 +54,7 @@ export {
   secondsToTicks,
   ticksToSeconds,
   formatClock,
+  formatRuntime,
 } from './jellyfin/progress';
 
 export type {

@@ -1,4 +1,4 @@
-import { formatClock, ticksToSeconds } from '@cinefin/core';
+import { formatClock, formatRuntime, ticksToSeconds } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
 import type { CatalogItem, MediaStreamLite } from '../data/jellyfin';
@@ -50,7 +50,7 @@ export function DetailsScreen({
           <div className="meta" style={{ marginTop: 12 }}>
             {[
               item.year,
-              item.runtimeTicks ? formatClock(ticksToSeconds(item.runtimeTicks)) : null,
+              item.runtimeTicks ? formatRuntime(ticksToSeconds(item.runtimeTicks)) : null,
               item.officialRating,
               (item.genres ?? []).slice(0, 2).join(', '),
               item.communityRating ? `★ ${item.communityRating.toFixed(1)}` : null,

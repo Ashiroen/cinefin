@@ -17,6 +17,7 @@ import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { getShowApi } from '@jellyfin/sdk/lib/utils/api/show-api';
 import { getMediaInfoApi } from '@jellyfin/sdk/lib/utils/api/media-info-api';
 import { getSessionApi } from '@jellyfin/sdk/lib/utils/api/session-api';
+import { getUserViewApi } from '@jellyfin/sdk/lib/utils/api/user-view-api';
 import {
   BaseItemKind,
   ItemFields,
@@ -199,32 +200,45 @@ export async function loadHome(): Promise<HomeModel> {
   const { api, account } = authedApi();
   const lib = getLibraryApi(api);
   const shows = getShowApi(api);
+  const views = getUserViewApi(api);
+  const itemFields = [
+    ItemFields.Overview,
+    ItemFields.Genres,
+    ItemFields.MediaStreams,
+    ItemFields.MediaSources,
+  ];
 
-  const [resumeRes, nextRes, foldersRes] = await Promise.all([
+  const [resumeRes, nextRes, viewsRes] = await Promise.all([
     lib.getResumeItems({
       userId: account.userId,
       limit: 12,
-      fields: [ItemFields.Overview, ItemFields.Genres],
+      fields: itemFields,
     }),
     shows.getNextUp({
       userId: account.userId,
       limit: 12,
-      fields: [ItemFields.Overview],
+      fields: itemFields,
     }),
-    lib.getItems({
-      userId: account.userId,
-      recursive: false,
-      includeItemTypes: [BaseItemKind.CollectionFolder],
-    }),
+    views.getUserViews({ userId: account.userId }),
   ]);
 
+  // Jellyfin 12: /Items?IncludeItemTypes=CollectionFolder returns nothing.
+  // User views is the supported library list (Movies, Shows, …).
+  let folders = (viewsRes.data.Items ?? []).filter(
+    (f) => f.CollectionType && f.CollectionType !== 'playlists' && f.CollectionType !== 'boxsets',
+  );
+  if (!folders.length) {
+    const root = await lib.getItems({ userId: account.userId, recursive: false });
+    folders = (root.data.Items ?? []).filter((f) => f.Type === BaseItemKind.CollectionFolder);
+  }
+
   const libraries = await Promise.all(
-    (foldersRes.data.Items ?? []).map(async (folder) => {
+    folders.map(async (folder) => {
       const latest = await lib.getLatestMedia({
         userId: account.userId,
         parentId: folder.Id,
         limit: 16,
-        fields: [ItemFields.Overview, ItemFields.Genres],
+        fields: itemFields,
       });
       return {
         id: folder.Id ?? '',
