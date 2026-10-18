@@ -164,7 +164,7 @@ export function HomeScreen({
             <div className="row" key={lib.id}>
               <div className="row-title">
                 {lib.name}
-                <span className="muted" style={{ fontSize: 18, marginLeft: 10 }}>
+                <span className="caption" style={{ marginLeft: 10 }}>
                   {lib.items.length} titles
                 </span>
               </div>

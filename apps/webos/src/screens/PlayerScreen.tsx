@@ -63,7 +63,7 @@ export function PlayerScreen({
               </div>
               <div style={{ textAlign: 'right' }} className="muted">
                 <div>{decision ? `${outputStateTitle(decision.output)}` : ''}</div>
-                <div style={{ maxWidth: 420, fontSize: 14 }}>{decision?.reason}</div>
+                <div className="caption" style={{ maxWidth: 420 }}>{decision?.reason}</div>
               </div>
             </div>
             <div className="scrub">
@@ -131,7 +131,7 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
     },
     {
       k: 'SERVER CONVERTING',
-      t: 'Server converting: DTS-HD MA → [confirmed format] (TV has no DTS)',
+      t: 'Server converting: DTS-HD MA → Dolby Digital Plus (TV has no DTS)',
       d: 'Changes quality, so it is amber and always has the reason.',
       c: '#3a2f12',
     },
@@ -144,7 +144,7 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
   ];
   return (
     <FocusRoot initial="back">
-      <div className="screen" style={{ padding: '72px 96px' }}>
+      <div className="screen" style={{ padding: 'var(--safe-y) var(--safe-x)' }}>
         <h1 className="h1" style={{ marginBottom: 12 }}>
           Output states
         </h1>

@@ -14,6 +14,7 @@ export function DetailsScreen({
   onPlay,
   onPlayFromStart,
   onSettings,
+  convertLabel,
 }: {
   item: CatalogItem;
   audioIndex?: number;
@@ -23,6 +24,7 @@ export function DetailsScreen({
   onPlay: () => void;
   onPlayFromStart: () => void;
   onSettings: () => void;
+  convertLabel?: string | null;
 }) {
   const audios = (item.mediaStreams ?? []).filter((s) => s.type === 'Audio');
   const current = audios.find((s) => s.index === audioIndex) ?? audios[0];
@@ -75,13 +77,13 @@ export function DetailsScreen({
               <div className="progress-line">
                 <i style={{ width: `${Math.round((pos / dur) * 100)}%` }} />
               </div>
-              <div className="muted" style={{ fontSize: 14, marginTop: 6 }}>
+              <div className="caption" style={{ marginTop: 6 }}>
                 {left} left
               </div>
             </div>
           ) : null}
           <div className="actions">
-            <Focusable id="play" className="btn btn-amber" onSelect={onPlay}>
+            <Focusable id="play" className="btn" onSelect={onPlay}>
               ▶ {canResume ? `Resume from ${formatClock(ticksToSeconds(pos))}` : 'Play'}
             </Focusable>
             <Focusable id="start" className="btn" onSelect={onPlayFromStart}>
@@ -125,6 +127,7 @@ export function DetailsScreen({
           <AudioPicker
             tracks={audios}
             selected={current?.index}
+            convertLabel={convertLabel}
             onPick={(i) => {
               onAudioIndex(i);
               onTogglePicker();
@@ -160,10 +163,12 @@ function AudioPicker({
   tracks,
   selected,
   onPick,
+  convertLabel,
 }: {
   tracks: MediaStreamLite[];
   selected?: number;
   onPick: (i: number) => void;
+  convertLabel?: string | null;
 }) {
   return (
     <div className="sheet-dim">
@@ -189,7 +194,7 @@ function AudioPicker({
               </div>
               <div className="s">
                 {dts
-                  ? 'Converted · [confirmed format] · TV has no DTS'
+                  ? `Converted · ${convertLabel ?? 'Not tested yet'} · TV has no DTS`
                   : t.codec === 'truehd'
                     ? 'Default · To receiver (passthrough)'
                     : 'To receiver (passthrough)'}
@@ -197,9 +202,6 @@ function AudioPicker({
             </Focusable>
           );
         })}
-        <p className="note" style={{ marginTop: 24 }}>
-          [confirmed format] is filled from the receiver test result (multichannel PCM or Dolby Digital Plus).
-        </p>
       </div>
     </div>
   );

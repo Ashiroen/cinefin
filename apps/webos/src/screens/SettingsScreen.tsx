@@ -60,7 +60,7 @@ export function SettingsPlayback({
               {n.label}
             </Focusable>
           ))}
-          <div className="muted" style={{ marginTop: 48, fontSize: 14, lineHeight: 1.4 }}>
+          <div className="caption" style={{ marginTop: 48 }}>
             Cinefin on your TV · ONKYO TX-NR7100
             <br />
             over HDMI eARC
@@ -156,7 +156,7 @@ function FormatLine({
       </div>
       <div>
         {row.status === 'converted' || row.convertTo ? (
-          <span className="btn" style={{ minHeight: 44, fontSize: 16 }}>
+          <span className="btn" style={{ minHeight: 48, fontSize: 22 }}>
             {row.convertTo === 'auto' || !row.convertTo
               ? 'Best confirmed'
               : CONVERT_TARGETS[auto].label}

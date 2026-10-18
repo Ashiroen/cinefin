@@ -31,6 +31,7 @@ import {
   type PublicUser,
 } from './data/jellyfin';
 import { getSession, setAccount, setTable } from './data/session';
+import { confirmedConvertLabel } from './data/format-label';
 import {
   fixtureQcCode,
   fixtureServers,
@@ -86,6 +87,8 @@ export function App() {
   const playRef = useRef<{ itemId: string; mediaSourceId: string; playSessionId: string } | null>(
     null,
   );
+  const [wizardClip, setWizardClip] = useState<'atmos' | 'dts'>('atmos');
+  const [dtsChecked, setDtsChecked] = useState(false);
 
   useEffect(() => {
     if (route.name !== 'connect' || route.empty) return;
@@ -331,7 +334,7 @@ export function App() {
           onSearchAgain={() => go({ name: 'connect' })}
         />
         {error ? (
-          <div className="note" style={{ position: 'absolute', bottom: 24, left: 96 }}>
+          <div className="caption" style={{ position: 'absolute', bottom: 24, left: 'var(--safe-x)' }}>
             {error}
           </div>
         ) : null}
@@ -395,6 +398,7 @@ export function App() {
         onPlay={() => void startPlay(item.id, false)}
         onPlayFromStart={() => void startPlay(item.id, true)}
         onSettings={() => go({ name: 'settings' })}
+        convertLabel={confirmedConvertLabel(table)}
       />
     );
   }
@@ -449,8 +453,12 @@ export function App() {
   if (route.name === 'wizard-detect') {
     return (
       <WizardDetect
-        onContinue={() => go({ name: 'wizard-test' })}
+        onContinue={() => {
+          setWizardClip('atmos');
+          go({ name: 'wizard-test' });
+        }}
         onSkip={() => go({ name: 'home' })}
+        convertLabel={confirmedConvertLabel(table)}
       />
     );
   }
@@ -458,9 +466,22 @@ export function App() {
   if (route.name === 'wizard-test') {
     return (
       <WizardTest
-        onPick={() => go({ name: 'wizard-summary' })}
+        onPick={(label) => {
+          if (wizardClip === 'dts') {
+            setDtsChecked(true);
+            const next =
+              label === 'PCM'
+                ? applyOverrides(cloneTable(table), { confirmed: { 'audio.pcm': 'direct' } })
+                : label === 'Dolby Digital'
+                  ? applyOverrides(cloneTable(table), { confirmed: { 'audio.ac3': 'direct' } })
+                  : applyOverrides(cloneTable(table), { confirmed: { 'audio.eac3': 'direct' } });
+            setTableState(next);
+            setTable(next);
+          }
+          go({ name: 'wizard-summary' });
+        }}
         onAgain={() => undefined}
-        onBack={() => go({ name: 'wizard-detect' })}
+        onBack={() => go({ name: wizardClip === 'dts' ? 'wizard-summary' : 'wizard-detect' })}
       />
     );
   }
@@ -486,8 +507,17 @@ export function App() {
           });
           go({ name: 'home' });
         }}
-        onAgain={() => go({ name: 'wizard-detect' })}
-        onTestDts={() => go({ name: 'wizard-test' })}
+        onAgain={() => {
+          setDtsChecked(false);
+          setWizardClip('atmos');
+          go({ name: 'wizard-detect' });
+        }}
+        onTestDts={() => {
+          setWizardClip('dts');
+          go({ name: 'wizard-test' });
+        }}
+        dtsChecked={dtsChecked}
+        convertLabel={confirmedConvertLabel(table)}
       />
     );
   }
@@ -630,6 +660,7 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         onPlay={() => undefined}
         onPlayFromStart={() => undefined}
         onSettings={() => undefined}
+        convertLabel={confirmedConvertLabel(table)}
       />
     );
   }
@@ -644,6 +675,7 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         onPlay={() => undefined}
         onPlayFromStart={() => undefined}
         onSettings={() => undefined}
+        convertLabel={confirmedConvertLabel(table)}
       />
     );
   }
@@ -667,7 +699,15 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
   if (board === '03b') {
     return <OutputStatesScreen onBack={() => undefined} />;
   }
-  if (board === '04a') return <WizardDetect onContinue={() => undefined} onSkip={() => undefined} />;
+  if (board === '04a') {
+    return (
+      <WizardDetect
+        onContinue={() => undefined}
+        onSkip={() => undefined}
+        convertLabel={confirmedConvertLabel(table)}
+      />
+    );
+  }
   if (board === '04b') {
     return (
       <WizardTest onPick={() => undefined} onAgain={() => undefined} onBack={() => undefined} />
@@ -679,6 +719,8 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         onFinish={() => undefined}
         onAgain={() => undefined}
         onTestDts={() => undefined}
+        dtsChecked={false}
+        convertLabel={confirmedConvertLabel(table)}
       />
     );
   }

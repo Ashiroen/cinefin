@@ -101,36 +101,46 @@ export function Focusable({
   onSelect,
   children,
   style,
+  disabled,
 }: {
   id: string;
   className?: string;
   onSelect?: () => void;
   children: ReactNode;
   style?: CSSProperties;
+  disabled?: boolean;
 }) {
   const { focused, setFocus, register } = useFocus();
   const ref = useRef<HTMLButtonElement>(null);
-  const is = focused === id;
+  const is = !disabled && focused === id;
 
   useEffect(() => {
+    if (disabled) {
+      register(id, null);
+      return;
+    }
     register(id, ref.current);
     return () => register(id, null);
-  }, [id, register]);
+  }, [id, register, disabled]);
 
   return (
     <button
       ref={ref}
       type="button"
+      disabled={disabled}
       data-focusable={id}
-      className={`${className ?? ''} ${is ? 'is-focused' : ''}`.trim()}
+      className={`${className ?? ''} ${is ? 'is-focused' : ''} ${disabled ? 'is-disabled' : ''}`.trim()}
       style={style}
-      onMouseEnter={() => setFocus(id)}
+      onMouseEnter={() => {
+        if (!disabled) setFocus(id);
+      }}
       onClick={() => {
+        if (disabled) return;
         setFocus(id);
         onSelect?.();
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && is) {
+        if (e.key === 'Enter' && is && !disabled) {
           e.preventDefault();
           onSelect?.();
         }

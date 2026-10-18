@@ -42,7 +42,7 @@ export function QuickConnectScreen({
           <p className="muted" style={{ marginBottom: 28 }}>
             Waiting for approval · Code refreshes in {remaining}
           </p>
-          <Focusable id="password" className="btn btn-amber btn-wide" onSelect={onPassword}>
+          <Focusable id="password" className="btn btn-wide" onSelect={onPassword}>
             Use password instead
           </Focusable>
           <Focusable

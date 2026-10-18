@@ -37,8 +37,8 @@ export function ConnectScreen({
           {none ? (
             <div className="banner" style={{ marginBottom: 36 }}>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 600 }}>No servers found on your network</div>
-                <div className="muted" style={{ fontSize: 16, marginTop: 4 }}>
+                <div style={{ fontSize: 24, fontWeight: 600 }}>No servers found on your network</div>
+                <div className="muted" style={{ marginTop: 4 }}>
                   Is the server on the same network as the TV?
                 </div>
               </div>
@@ -55,20 +55,15 @@ export function ConnectScreen({
                 <Focusable
                   key={s.id}
                   id={`server-${s.id}`}
-                  className="server-card"
+                  className={`server-card ${s.supported ? '' : 'is-unsupported'}`}
                   onSelect={() => s.supported && onPick(s)}
                 >
-                  <span style={{ fontSize: 22, opacity: 0.7 }}>{s.supported ? '▣' : '□'}</span>
+                  <span style={{ fontSize: 26, opacity: 0.7 }}>{s.supported ? '▣' : '□'}</span>
                   <span style={{ flex: 1 }}>
                     <div className="name">{s.name}</div>
                     <div className="sub">
                       {s.address.replace(/^https?:\/\//, '')} · Jellyfin {s.version || '—'}
-                      {!s.supported ? (
-                        <>
-                          {' '}
-                          · <span className="chip">Needs Jellyfin {MIN_SERVER_VERSION_LABEL}+</span>
-                        </>
-                      ) : null}
+                      {!s.supported ? ` · Needs Jellyfin ${MIN_SERVER_VERSION_LABEL}+` : ''}
                     </div>
                   </span>
                   <span className="muted">{s.supported ? '›' : ''}</span>
@@ -99,20 +94,6 @@ export function ConnectScreen({
             </div>
           </div>
 
-          <div className="note" style={{ width: 920, marginTop: 36 }}>
-            {none ? (
-              <p>Focus starts in the address field; OK opens the TV keyboard. Magic Remote hover uses the same style as focus.</p>
-            ) : (
-              <>
-                <p>
-                  Magic Remote: pointer hover uses the same style as D-pad focus (scale + amber ring). One focused element per screen.
-                </p>
-                <p>
-                  [{MIN_SERVER_VERSION_LABEL}] comes from the Jellyfin TypeScript SDK. Server versions shown are example data.
-                </p>
-              </>
-            )}
-          </div>
         </div>
       </div>
     </FocusRoot>

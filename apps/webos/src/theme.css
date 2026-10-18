@@ -78,10 +78,15 @@ input {
 }
 
 .is-focused {
-  outline: var(--focus-w) solid var(--focus);
-  outline-offset: 0;
+  outline: none;
+  box-shadow: 0 0 0 var(--focus-w) var(--focus);
   transform: scale(1.08);
   z-index: 2;
+}
+
+.btn.is-focused {
+  background: var(--amber);
+  color: #1a1204;
 }
 
 .card.is-focused,
@@ -140,7 +145,7 @@ input {
 }
 
 .kicker {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -149,13 +154,19 @@ input {
 
 .meta {
   color: var(--muted);
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .note {
-  color: var(--amber);
-  font-size: 16px;
+  color: var(--text);
+  font-size: 22px;
   line-height: 1.45;
+}
+
+.caption {
+  font-size: 20px;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .note p {
@@ -164,6 +175,7 @@ input {
 
 .muted {
   color: var(--muted);
+  font-size: 24px;
 }
 
 /* Pills / buttons */
@@ -177,14 +189,14 @@ input {
   padding: 0 28px;
   background: var(--surface);
   border-radius: var(--radius-pill);
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 560;
   gap: 12px;
 }
 
-.btn-amber {
-  background: var(--amber);
-  color: #1a1204;
+.btn.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .btn-ghost {
@@ -205,7 +217,7 @@ input {
 
 .field input {
   flex: 1;
-  font-size: 22px;
+  font-size: 26px;
   background: transparent;
   color: var(--text);
 }
@@ -216,7 +228,7 @@ input {
 
 .kbd-hint {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 550;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -231,15 +243,15 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 72px 96px 48px;
+  padding: 72px var(--safe-x) var(--safe-y);
   height: 1080px;
 }
 
 .top-bar {
   position: absolute;
-  top: 36px;
-  left: 48px;
-  right: 48px;
+  top: var(--safe-y);
+  left: var(--safe-x);
+  right: var(--safe-x);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -247,11 +259,11 @@ input {
 
 .top-meta {
   color: var(--muted);
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .section-label {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 650;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -284,9 +296,13 @@ input {
 }
 
 .server-card .sub {
-  font-size: 16px;
+  font-size: 22px;
   color: var(--muted);
   margin-top: 4px;
+}
+
+.server-card.is-unsupported {
+  opacity: 0.55;
 }
 
 .chip {
@@ -295,9 +311,9 @@ input {
   gap: 8px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #2a2110;
-  color: var(--amber);
-  font-size: 14px;
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: 20px;
   font-weight: 600;
 }
 
@@ -378,7 +394,7 @@ input {
 
 /* Home / rows */
 .hero {
-  padding: 96px 96px 0;
+  padding: 96px var(--safe-x) 0;
   min-height: 420px;
 }
 
@@ -390,16 +406,17 @@ input {
   margin-bottom: 16px;
 }
 
-.hero .synopsis {
+.hero .synopsis,
+.synopsis {
   max-width: 760px;
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1.45;
   color: #c8c8cc;
   margin-top: 16px;
 }
 
 .rows {
-  padding: 28px 0 0 96px;
+  padding: 28px 0 0 var(--safe-x);
 }
 
 .row {
@@ -445,7 +462,7 @@ input {
   left: 16px;
   bottom: 14px;
   right: 12px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 620;
 }
 
@@ -468,13 +485,13 @@ input {
 
 .card-meta {
   margin-top: 8px;
-  font-size: 15px;
+  font-size: 20px;
   color: var(--muted);
 }
 
 /* Details */
 .details {
-  padding: 110px 96px 40px;
+  padding: 110px var(--safe-x) 40px;
 }
 
 .badge-row {
@@ -487,7 +504,7 @@ input {
   padding: 6px 12px;
   border-radius: 8px;
   background: var(--surface-3);
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 650;
   letter-spacing: 0.04em;
 }
@@ -516,11 +533,11 @@ input {
 }
 
 .cast .name {
-  font-size: 16px;
+  font-size: 24px;
 }
 
 .cast .role {
-  font-size: 14px;
+  font-size: 20px;
   color: var(--muted);
 }
 
@@ -538,7 +555,7 @@ input {
   width: 720px;
   height: 1080px;
   background: #111113;
-  padding: 96px 56px;
+  padding: var(--safe-y) var(--safe-x);
 }
 
 .pick-row {
@@ -558,7 +575,7 @@ input {
 }
 
 .pick-row .s {
-  font-size: 16px;
+  font-size: 22px;
   color: var(--muted);
   margin-top: 4px;
 }
@@ -586,7 +603,7 @@ input {
     rgba(0, 0, 0, 0.05) 40%,
     rgba(0, 0, 0, 0.72) 100%
   );
-  padding: 48px 64px;
+  padding: var(--safe-y) var(--safe-x);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -633,8 +650,8 @@ input {
 }
 
 .settings-nav {
-  width: 380px;
-  padding: 72px 36px;
+  width: 440px;
+  padding: var(--safe-y) 36px var(--safe-y) var(--safe-x);
   background: #0c0c0e;
 }
 
@@ -650,7 +667,7 @@ input {
   height: 56px;
   padding: 0 20px;
   border-radius: 16px;
-  font-size: 22px;
+  font-size: 24px;
   color: var(--muted);
   width: 100%;
   text-align: left;
@@ -663,7 +680,7 @@ input {
 
 .settings-main {
   flex: 1;
-  padding: 64px 64px 48px;
+  padding: var(--safe-y) var(--safe-x) var(--safe-y) 48px;
   overflow-y: auto;
 }
 
@@ -678,7 +695,7 @@ input {
 }
 
 .format-row .why {
-  font-size: 15px;
+  font-size: 22px;
   color: var(--muted);
 }
 
@@ -686,7 +703,7 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 22px;
 }
 
 .status-dot i {
@@ -709,7 +726,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 36px 56px 0;
+  padding: var(--safe-y) var(--safe-x) 0;
 }
 
 .steps {
@@ -717,6 +734,7 @@ input {
   align-items: center;
   gap: 10px;
   color: var(--muted);
+  font-size: 20px;
 }
 
 .steps .bar {
@@ -741,7 +759,7 @@ input {
   display: grid;
   grid-template-columns: 1fr 360px;
   gap: 48px;
-  padding: 36px 96px 0;
+  padding: 36px var(--safe-x) 0;
 }
 
 .fmt-grid {

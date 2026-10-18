@@ -33,9 +33,11 @@ function Chrome({
 export function WizardDetect({
   onContinue,
   onSkip,
+  convertLabel,
 }: {
   onContinue: () => void;
   onSkip: () => void;
+  convertLabel?: string | null;
 }) {
   return (
     <FocusRoot initial="continue">
@@ -70,7 +72,7 @@ export function WizardDetect({
               <span>ℹ</span>
               <span>
                 <div className="name">
-                  DTS, DTS-HD MA, DTS:X <span className="chip">[confirmed format]</span>
+                  DTS, DTS-HD MA, DTS:X · {convertLabel ?? 'Not tested yet'}
                 </div>
                 <div className="sub">
                   Your TV doesn't support DTS. The server converts it to multichannel PCM (lossless) or Dolby Digital Plus.
@@ -78,7 +80,7 @@ export function WizardDetect({
               </span>
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 28 }}>
-              <Focusable id="continue" className="btn btn-amber btn-wide" onSelect={onContinue}>
+              <Focusable id="continue" className="btn btn-wide" onSelect={onContinue}>
                 Continue
               </Focusable>
               <Focusable id="skip" className="btn" onSelect={onSkip}>
@@ -98,9 +100,6 @@ export function WizardDetect({
               Receiver
               <div className="sub">ONKYO TX-NR7100</div>
             </div>
-            <p className="note" style={{ marginTop: 24 }}>
-              [confirmed format] is filled from the test result (multichannel PCM or Dolby Digital Plus).
-            </p>
           </div>
         </div>
       </Chrome>
@@ -129,7 +128,7 @@ export function WizardTest({
   return (
     <FocusRoot initial="fmt-Dolby Atmos">
       <Chrome step={2}>
-        <div style={{ padding: '36px 96px' }}>
+        <div style={{ padding: '36px var(--safe-x)' }}>
           <h1 className="h1" style={{ marginBottom: 12 }}>
             What does your receiver display now?
           </h1>
@@ -144,7 +143,7 @@ export function WizardTest({
               <Focusable
                 key={f}
                 id={`fmt-${f}`}
-                className={`btn fmt-btn ${f === 'Dolby Atmos' ? 'btn-amber' : ''}`}
+                className="btn fmt-btn"
                 onSelect={() => onPick(f)}
               >
                 {f}
@@ -170,21 +169,33 @@ export function WizardSummary({
   onFinish,
   onAgain,
   onTestDts,
+  dtsChecked,
+  convertLabel,
 }: {
   onFinish: () => void;
   onAgain: () => void;
   onTestDts: () => void;
+  dtsChecked?: boolean;
+  convertLabel?: string | null;
 }) {
+  const dtsDone = Boolean(dtsChecked);
+  const dtsFormat = convertLabel ?? 'Not tested yet';
   const rows = [
     ['Dolby Digital', 'Passthrough', 'Sent to receiver'],
     ['Dolby Digital Plus', 'Passthrough', 'Sent to receiver'],
     ['Dolby TrueHD · Atmos', 'Passthrough', 'Confirmed: receiver showed Dolby Atmos'],
-    ['DTS · DTS-HD MA · DTS:X', 'Untested', 'TV has no DTS, so the server converts it.'],
+    [
+      'DTS · DTS-HD MA · DTS:X',
+      dtsDone ? 'Converted' : 'Untested',
+      dtsDone
+        ? `TV has no DTS, so the server converts it to ${dtsFormat}.`
+        : 'TV has no DTS, so the server converts it.',
+    ],
   ];
   return (
-    <FocusRoot initial="finish">
+    <FocusRoot initial={dtsDone ? 'finish' : 'dts'}>
       <Chrome step={3}>
-        <div style={{ padding: '36px 96px' }}>
+        <div style={{ padding: '36px var(--safe-x)' }}>
           <h1 className="h1" style={{ marginBottom: 12 }}>
             Your audio setup
           </h1>
@@ -203,7 +214,7 @@ export function WizardSummary({
               style={{ gridTemplateColumns: '1fr 280px 1fr', background: 'var(--surface)' }}
             >
               <div>{a}</div>
-              <div className="status-dot">
+              <div className={`status-dot ${b === 'Untested' ? 'warn' : ''}`}>
                 <i /> {b}
               </div>
               <div className="why">{c}</div>
@@ -213,23 +224,28 @@ export function WizardSummary({
             className="server-card"
             style={{ width: '100%', height: 'auto', padding: '18px 24px', marginTop: 8 }}
           >
-            <Focusable id="dts" className="btn btn-amber" onSelect={onTestDts}>
+            <Focusable id="dts" className="btn" onSelect={onTestDts}>
               ▶ Test DTS conversion
             </Focusable>
             <span className="muted" style={{ marginLeft: 16 }}>
               Plays a converted clip, then asks what your receiver displays.
+              {dtsDone ? ` Result after the check: ${dtsFormat}` : ''}
             </span>
           </div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 36, alignItems: 'center' }}>
-            <Focusable id="finish" className="btn" onSelect={onFinish}>
-              Finish
-            </Focusable>
+          <div style={{ display: 'flex', gap: 12, marginTop: 36, alignItems: 'flex-start' }}>
+            <div>
+              <Focusable id="finish" className="btn" disabled={!dtsDone} onSelect={onFinish}>
+                Finish
+              </Focusable>
+              {!dtsDone ? (
+                <div className="caption" style={{ marginTop: 8 }}>
+                  Available after the DTS check
+                </div>
+              ) : null}
+            </div>
             <Focusable id="again" className="btn" onSelect={onAgain}>
               Run again
             </Focusable>
-            <span className="note" style={{ marginLeft: 'auto', maxWidth: 420 }}>
-              [confirmed format] is filled from the test result (multichannel PCM or Dolby Digital Plus).
-            </span>
           </div>
         </div>
       </Chrome>
