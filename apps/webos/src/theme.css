@@ -1146,18 +1146,26 @@ input {
 }
 
 .state-card.is-stacked {
-  grid-template-columns: 1fr;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
 }
 
 .state-label {
-  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.state-card.is-stacked .state-desc {
+  width: 100%;
 }
 
 .state-chip {
   display: inline-flex;
   align-items: center;
+  width: max-content;
+  max-width: none;
+  flex-shrink: 0;
   margin-top: 10px;
   background: var(--surface-3);
   border-radius: 12px;

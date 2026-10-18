@@ -159,8 +159,8 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
     },
     {
       k: 'SERVER REPACKAGING',
-      t: 'Server repackaging: MKV → MP4 · picture untouched',
-      d: 'Lossless, container only. Neutral, not a warning. Example: Dolby Vision in MKV on webOS 22.',
+      t: 'Server repackaging: MKV → TS · picture untouched',
+      d: 'Lossless, container only. Neutral, not a warning. Example: Dolby Vision in MKV remuxes to progressive TS on webOS 22.',
       c: '#1e3328',
     },
     {
@@ -219,7 +219,12 @@ function StateCard({
   useLayoutEffect(() => {
     const el = chipRef.current;
     if (!el) return;
-    setStack(el.scrollWidth > STATE_CHIP_COL);
+    const probe = el.cloneNode(true) as HTMLElement;
+    probe.style.cssText =
+      'position:absolute;left:-9999px;top:0;width:max-content;max-width:none;white-space:nowrap;display:inline-flex';
+    document.body.appendChild(probe);
+    setStack(probe.scrollWidth > STATE_CHIP_COL);
+    probe.remove();
   }, [chip]);
   return (
     <div className={`state-card ${stack ? 'is-stacked' : ''}`}>
