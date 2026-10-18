@@ -1,0 +1,29 @@
+{
+  "name": "cinefin",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Cinefin — a Jellyfin client for home theater (webOS first)",
+  "workspaces": [
+    "packages/core",
+    "apps/webos"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck -w @cinefin/core && npm run typecheck -w @cinefin/webos",
+    "lint": "eslint .",
+    "test": "npm test -w @cinefin/core",
+    "build": "npm run build -w @cinefin/webos",
+    "dev": "npm run dev -w @cinefin/webos",
+    "package:webos": "npm run build && node scripts/package-webos.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@webos-tools/cli": "^3.2.6",
+    "eslint": "^9.16.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

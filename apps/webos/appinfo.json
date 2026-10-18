@@ -1,0 +1,24 @@
+{
+  "id": "com.cinefin.app",
+  "title": "Cinefin",
+  "type": "web",
+  "main": "index.html",
+  "version": "0.1.0",
+  "vendor": "Cinefin",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "splashBackground": "splash.png",
+  "bgImage": "splash.png",
+  "iconColor": "#0B0A09",
+  "disableBackHistoryAPI": true,
+  "supportPortraitMode": false,
+  "resolution": "1920x1080",
+  "requiredACG": [],
+  "requiredPermissions": [
+    "audio.operation",
+    "media.operation",
+    "network.connection",
+    "network.secure",
+    "time.query"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "com.cinefin.app.service",
+  "description": "Cinefin LAN discovery (UDP 7359)",
+  "engine": "node",
+  "services": [
+    {
+      "name": "com.cinefin.app.service"
+    }
+  ]
+}
