@@ -6,6 +6,7 @@ It plays the original file and sends the original audio to the AV receiver untou
 
 - Product spec: [`docs/SPEC.md`](docs/SPEC.md)
 - Install on an LG C2: [`docs/INSTALL-webos.md`](docs/INSTALL-webos.md)
+- M1 verification notes: [`docs/VERIFICATION.md`](docs/VERIFICATION.md)
 
 ```bash
 npm ci

@@ -535,6 +535,18 @@ export function App() {
 
 function Preview({ board, table }: { board: string; table: CapabilityTable }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const previewTable = useMemo(() => {
+    if (board === '03' || board === '05' || board === '05b') {
+      return applyOverrides(cloneTable(table), {
+        confirmed: {
+          'audio.ac3': 'direct',
+          'audio.eac3': 'direct',
+          'audio.truehd': 'sent_to_receiver',
+        },
+      });
+    }
+    return table;
+  }, [board, table]);
   const media = useMemo(
     () =>
       itemToMedia(longMeridian, 1) ?? {
@@ -544,7 +556,7 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
       },
     [],
   );
-  const dec = decidePlayback(media, table);
+  const dec = decidePlayback(media, previewTable);
 
   if (board === '00a') {
     return (
@@ -673,18 +685,18 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
   if (board === '05') {
     return (
       <SettingsPlayback
-        table={table}
+        table={previewTable}
         onConvert={() => undefined}
         onWizard={() => undefined}
       />
     );
   }
   if (board === '05b') {
-    const row = findRow(table, 'audio.dtshd') ?? table.rows[0]!;
+    const row = findRow(previewTable, 'audio.dtshd') ?? previewTable.rows[0]!;
     return (
       <ConvertPicker
         row={row}
-        table={table}
+        table={previewTable}
         onPick={() => undefined}
         onClose={() => undefined}
       />
