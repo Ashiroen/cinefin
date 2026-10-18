@@ -176,11 +176,11 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
   ];
   return (
     <FocusRoot initial="back">
-      <div className="screen" style={{ padding: 'var(--safe-y) var(--safe-x)' }}>
+      <div className="screen output-states">
         <h1 className="h1" style={{ marginBottom: 12 }}>
           Output states
         </h1>
-        <p className="muted" style={{ maxWidth: 880, marginBottom: 32 }}>
+        <p className="muted" style={{ maxWidth: 880, marginBottom: 20 }}>
           The line in the player overlay that shows what happens to audio and video. Hidden by default; one press of the remote shows it.
         </p>
         <div className="state-list">
@@ -207,7 +207,7 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
         <Focusable
           id="back"
           className="btn"
-          style={{ marginTop: 28, marginLeft: 0 }}
+          style={{ marginTop: 20, alignSelf: 'flex-start' }}
           onSelect={onBack}
         >
           Back

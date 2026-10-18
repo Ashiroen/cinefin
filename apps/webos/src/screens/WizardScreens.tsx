@@ -51,7 +51,7 @@ export function WizardDetect({
             <p className="muted" style={{ marginBottom: 28, maxWidth: 720 }}>
               Here's what we found over HDMI eARC. The test on the next step confirms it.
             </p>
-            <div className="server-card" style={{ width: '100%', marginBottom: 12 }}>
+            <div className="server-card" style={{ width: '100%', height: 'auto', minHeight: 92, marginBottom: 12, padding: '14px 28px' }}>
               <span className="glyph-orb">✓</span>
               <span>
                 <div className="name">Connected over HDMI eARC</div>

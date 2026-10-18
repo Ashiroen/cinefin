@@ -36,12 +36,16 @@ export function DetailsScreen({
   return (
     <FocusRoot initial={pickerOpen && current ? `track-${current.index}` : 'play'}>
       <div className="screen screen-fill">
-        <Focusable id="search" className="icon-btn icon-search">
-          <IconSearch />
-        </Focusable>
-        <Focusable id="settings" className="icon-btn icon-settings" onSelect={onSettings}>
-          <IconSettings />
-        </Focusable>
+        {pickerOpen ? null : (
+          <>
+            <Focusable id="search" className="icon-btn icon-search">
+              <IconSearch />
+            </Focusable>
+            <Focusable id="settings" className="icon-btn icon-settings" onSelect={onSettings}>
+              <IconSettings />
+            </Focusable>
+          </>
+        )}
         <div className="details">
           <h1 className="h1 h1-lg">{item.name}</h1>
           <div className="meta" style={{ marginTop: 12 }}>
