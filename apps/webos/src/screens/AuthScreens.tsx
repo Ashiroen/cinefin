@@ -64,23 +64,30 @@ export function PasswordScreen({
   users,
   selected,
   onSelectUser,
+  username,
+  onUsername,
   password,
   onPassword,
   onSignIn,
   onQuick,
+  error,
 }: {
   serverLabel: string;
   users: PublicUser[];
   selected: string;
   onSelectUser: (id: string) => void;
+  username: string;
+  onUsername: (v: string) => void;
   password: string;
   onPassword: (v: string) => void;
   onSignIn: () => void;
   onQuick: () => void;
+  error?: string | null;
 }) {
   const current = users.find((u) => u.id === selected);
+  const other = selected === 'other' || users.length === 0;
   return (
-    <FocusRoot initial={users[0] ? `user-${users[0].id}` : 'password'}>
+    <FocusRoot initial={users[0] ? `user-${users[0].id}` : 'username'}>
       <div className="screen">
         <div className="top-bar">
           <Logo size={36} />
@@ -113,13 +120,32 @@ export function PasswordScreen({
             </Focusable>
           </div>
           <div style={{ width: 720 }}>
+            {other ? (
+              <>
+                <div className="section-label">Username</div>
+                <Focusable id="username" className="field" style={{ marginBottom: 16 }}>
+                  <span>☺</span>
+                  <input
+                    data-testid="username"
+                    autoComplete="username"
+                    value={username}
+                    placeholder="User name"
+                    onChange={(e) => onUsername(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="kbd-hint">TV keyboard</span>
+                </Focusable>
+              </>
+            ) : null}
             <div className="section-label">
-              Password for {current?.name ?? 'user'}
+              Password for {other ? username || 'user' : current?.name ?? 'user'}
             </div>
             <Focusable id="password" className="field" style={{ marginBottom: 16 }}>
               <span>🔒</span>
               <input
+                data-testid="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 placeholder="••••••••"
                 onChange={(e) => onPassword(e.target.value)}
@@ -130,6 +156,11 @@ export function PasswordScreen({
             <Focusable id="signin" className="btn" style={{ width: '100%' }} onSelect={onSignIn}>
               Sign in
             </Focusable>
+            {error ? (
+              <p className="note" style={{ marginTop: 16 }} data-testid="signin-error">
+                {error}
+              </p>
+            ) : null}
           </div>
           <Focusable id="quick" className="btn btn-ghost" style={{ marginTop: 20 }} onSelect={onQuick}>
             Use Quick Connect instead

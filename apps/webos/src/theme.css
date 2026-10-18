@@ -321,8 +321,8 @@ input {
 
 .qc-tile {
   width: 120px;
-  height: 140px;
-  border-radius: 28px;
+  height: 148px;
+  border-radius: 22px;
   background: var(--surface);
   display: flex;
   align-items: center;

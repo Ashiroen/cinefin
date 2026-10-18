@@ -14,7 +14,8 @@
     "test": "npm test -w @cinefin/core",
     "build": "npm run build -w @cinefin/webos",
     "dev": "npm run dev -w @cinefin/webos",
-    "package:webos": "npm run build && node scripts/package-webos.mjs"
+    "package:webos": "npm run build && node scripts/package-webos.mjs",
+    "verify:browser": "node scripts/verify-browser.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

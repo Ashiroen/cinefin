@@ -11,6 +11,7 @@ export default tseslint.config(
       'apps/webos/service/**',
       'brand/**',
       'media/**',
+      'scripts/verify-browser.mjs',
     ],
   },
   js.configs.recommended,

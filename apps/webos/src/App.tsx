@@ -66,6 +66,7 @@ export function App() {
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [qc, setQc] = useState({ code: '', secret: '', remaining: '4:32' });
   const [home, setHome] = useState<HomeModel>(homeFixture);
   const [hero, setHero] = useState<CatalogItem | null>(longMeridian);
@@ -189,7 +190,7 @@ export function App() {
       }
       const pub = await fetchPublicUsers(info.address);
       setUsers(pub);
-      setUserId(pub[0]?.id ?? '');
+      setUserId(pub[0]?.id ?? 'other');
       go({ name: 'quick' });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not reach the server');
@@ -198,19 +199,28 @@ export function App() {
 
   async function signInPassword() {
     if (!picked) return;
-    const name = users.find((u) => u.id === userId)?.name ?? userId;
-    const deviceId = randomId();
-    const auth = await loginByName(picked.address, name, password, deviceId);
-    setAccount({
-      serverId: picked.id,
-      serverName: picked.name,
-      address: picked.address,
-      userId: auth.User?.Id ?? '',
-      userName: auth.User?.Name ?? name,
-      token: auth.AccessToken ?? '',
-      deviceId,
-    });
-    go({ name: 'home' });
+    setError(null);
+    const name = (users.find((u) => u.id === userId)?.name ?? username).trim();
+    if (!name) {
+      setError('Enter a user name');
+      return;
+    }
+    try {
+      const deviceId = randomId();
+      const auth = await loginByName(picked.address, name, password, deviceId);
+      setAccount({
+        serverId: picked.id,
+        serverName: picked.name,
+        address: picked.address,
+        userId: auth.User?.Id ?? '',
+        userName: auth.User?.Name ?? name,
+        token: auth.AccessToken ?? '',
+        deviceId,
+      });
+      go({ name: 'home' });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Sign-in failed');
+    }
   }
 
   async function startPlay(id: string, fromStart = false) {
@@ -333,13 +343,16 @@ export function App() {
     return (
       <PasswordScreen
         serverLabel={serverLabel}
-        users={users.length ? users : fixtureUsers}
-        selected={userId || fixtureUsers[0]!.id}
+        users={users}
+        selected={userId || (users[0]?.id ?? 'other')}
         onSelectUser={setUserId}
+        username={username}
+        onUsername={setUsername}
         password={password}
         onPassword={setPassword}
         onSignIn={() => void signInPassword()}
         onQuick={() => go({ name: 'quick' })}
+        error={error}
       />
     );
   }
@@ -558,6 +571,8 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         users={fixtureUsers}
         selected={fixtureUsers[0]!.id}
         onSelectUser={() => undefined}
+        username=""
+        onUsername={() => undefined}
         password="secret"
         onPassword={() => undefined}
         onSignIn={() => undefined}

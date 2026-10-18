@@ -85,6 +85,7 @@ export function ConnectScreen({
               <Focusable id="address" className="field" style={{ flex: 1 }}>
                 <span className="muted">⌂</span>
                 <input
+                  data-testid="address"
                   value={address}
                   placeholder="e.g. 192.168.1.20:8096"
                   onChange={(e) => onAddress(e.target.value)}

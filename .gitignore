@@ -16,3 +16,4 @@ playwright-report/
 test-results/
 media/generated/
 .jellyfin-data/
+docs/verification/
