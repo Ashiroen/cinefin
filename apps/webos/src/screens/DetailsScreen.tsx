@@ -34,7 +34,7 @@ export function DetailsScreen({
   const left = dur > 0 ? formatClock(ticksToSeconds(dur - pos)) : '';
 
   return (
-    <FocusRoot initial="play">
+    <FocusRoot initial={pickerOpen && current ? `track-${current.index}` : 'play'}>
       <div className="screen screen-fill">
         <div className="top-bar">
           <Logo size={34} />
