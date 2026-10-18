@@ -1136,13 +1136,23 @@ input {
 
 .state-card {
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 460px 1fr;
   gap: 24px;
   align-items: center;
   background: var(--surface);
   border-radius: 22px;
   padding: 10px 20px;
   flex: 1 1 0;
+}
+
+.state-card.is-stacked {
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 8px;
+}
+
+.state-label {
+  min-width: 0;
 }
 
 .state-chip {

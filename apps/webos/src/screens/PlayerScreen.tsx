@@ -1,7 +1,9 @@
-import type { RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { formatClock, type PlaybackDecision } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import type { CatalogItem } from '../data/jellyfin';
+
+const STATE_CHIP_COL = 460;
 
 function formatEndsClock(now: Date, remainingSeconds: number): string {
   const end = new Date(now.getTime() + Math.max(0, remainingSeconds) * 1000);
@@ -185,15 +187,7 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
         </p>
         <div className="state-list">
           {rows.map((r) => (
-            <div key={r.k} className="state-card">
-              <div>
-                <div className="kicker">{r.k}</div>
-                <div className="state-chip" style={{ background: r.c }}>
-                  {r.t}
-                </div>
-              </div>
-              <div className="muted">{r.d}</div>
-            </div>
+            <StateCard key={r.k} kicker={r.k} chip={r.t} desc={r.d} color={r.c} />
           ))}
         </div>
         <Focusable
@@ -206,5 +200,36 @@ export function OutputStatesScreen({ onBack }: { onBack: () => void }) {
         </Focusable>
       </div>
     </FocusRoot>
+  );
+}
+
+function StateCard({
+  kicker,
+  chip,
+  desc,
+  color,
+}: {
+  kicker: string;
+  chip: string;
+  desc: string;
+  color: string;
+}) {
+  const chipRef = useRef<HTMLDivElement>(null);
+  const [stack, setStack] = useState(false);
+  useLayoutEffect(() => {
+    const el = chipRef.current;
+    if (!el) return;
+    setStack(el.scrollWidth > STATE_CHIP_COL);
+  }, [chip]);
+  return (
+    <div className={`state-card ${stack ? 'is-stacked' : ''}`}>
+      <div className="state-label">
+        <div className="kicker">{kicker}</div>
+        <div ref={chipRef} className="state-chip" style={{ background: color }}>
+          {chip}
+        </div>
+      </div>
+      <div className="muted state-desc">{desc}</div>
+    </div>
   );
 }
