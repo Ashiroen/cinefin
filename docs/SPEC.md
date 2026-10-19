@@ -326,9 +326,9 @@ webOS implements those with `<video>` + a static/Luna probe. Android implements 
 
 ## 10. Packaging and distribution
 
-- Vite production build → static files + `appinfo.json` + brand icons/splash + JS service → `ares-package` (`@webos-tools/cli`) → `com.cinefin.app_0.1.0_all.ipk`.
-- CI runs typecheck, lint, unit tests, production build, and `ares-package`, and uploads the IPK.
-- Install path is **Developer Mode sideload**, documented in `docs/INSTALL-webos.md`. Session expiry uninstalls sideloaded apps — called out there, including how to extend (on-TV EXTEND; CLI `ares-launch com.palmdts.devmode -p extend=true -d DEVICE`). After expiry you cannot extend; you sign in again.
+- Vite production build → static files + `appinfo.json` + brand icons/splash + JS service → `ares-package` (`@webos-tools/cli`) → `dist/ipk/com.cinefin.app_0.1.0_all.ipk`.
+- CI runs typecheck, lint, unit tests, production build, and `ares-package`. The IPK is uploaded as a workflow artifact and published to GitHub Releases: a rolling `latest` release (asset replaced on each `main` push) plus a versioned release when a `v*` tag is pushed.
+- Install path is **Developer Mode sideload**, documented in `docs/INSTALL-webos.md` (download from the latest GitHub Release, then `ares-install`, webOS Dev Manager, or Homebrew Channel). Session expiry uninstalls sideloaded apps — called out there, including how to extend (on-TV EXTEND; CLI `ares-launch com.palmdts.devmode -p extend=true -d DEVICE`). After expiry you cannot extend; you sign in again.
 - No Content Store listing in M1.
 
 ---
