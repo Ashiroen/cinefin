@@ -6,29 +6,21 @@ You need:
 
 - The C2 on the same network as your PC
 - An [LG Developer](https://webostv.developer.lge.com/) account (email + password)
-- Node.js 22+ and the webOS CLI
-- The `com.cinefin.app_*.ipk` from CI (Actions artifact) or built locally
+- The `com.cinefin.app_*.ipk` from [GitHub Releases](https://github.com/Ashiroen/cinefin/releases/latest) (or built locally)
 
-## 1. Build the IPK (optional)
+## 1. Download the IPK
 
-From the repo root:
+Each push to `main` replaces the asset on the rolling **Latest** release. Pushing a `v*` tag also publishes a versioned release.
 
-```bash
-npm ci
-npm run package:webos
-```
+From a browser: open [the latest release](https://github.com/Ashiroen/cinefin/releases/latest) and download `com.cinefin.app_<version>_all.ipk`.
 
-This typechecks, builds the web app for Chromium 87, and runs `ares-package`. The IPK lands in `dist/`.
-
-The CLI is `@webos-tools/cli` (not the retired `@webosose/ares-cli`). If you already have the old one:
+From a terminal (GitHub CLI):
 
 ```bash
-npm uninstall -g @webosose/ares-cli
-npm install -g @webos-tools/cli
-ares-config --profile tv
+gh release download latest --repo Ashiroen/cinefin --pattern '*.ipk'
 ```
 
-`npm run package:webos` installs the CLI locally in the repo if it is missing.
+Then install that file with **one** of: `ares-install` (§4), [webOS Dev Manager](#webos-dev-manager), or [Homebrew Channel](#homebrew-channel).
 
 ## 2. Turn on Developer Mode on the C2
 
@@ -45,7 +37,15 @@ Developer Mode turns itself off if:
 
 When it turns off, **every sideloaded app is deleted**, including Cinefin. You will see the Developer Mode login again.
 
-## 3. Pair the PC with the TV
+## 3. Pair the PC with the TV (`ares-install`)
+
+Install the current LG CLI (`@webos-tools/cli`, not the retired `@webosose/ares-cli`):
+
+```bash
+npm uninstall -g @webosose/ares-cli
+npm install -g @webos-tools/cli
+ares-config --profile tv
+```
 
 On the TV: tap **Key Server** so it is on.
 
@@ -75,12 +75,14 @@ ares-device --system-info --device c2
 
 You should see something like `sdkVersion : 7.x` / webOS 22 on a stock C2.
 
-## 4. Install and launch
+## 4. Install and launch with `ares-install`
 
 ```bash
-ares-install --device c2 dist/com.cinefin.app_0.1.0_all.ipk
+ares-install --device c2 com.cinefin.app_0.1.0_all.ipk
 ares-launch --device c2 com.cinefin.app
 ```
+
+Use the filename you downloaded (or `dist/ipk/com.cinefin.app_0.1.0_all.ipk` if you built locally).
 
 Cinefin appears in the launcher with the amber mark. First run: connect to the server (board 00a / 00a2). If LAN discovery is empty, that is expected on some networks — type `192.168.x.x` or `192.168.x.x:8096`. `http://` and port `8096` are assumed. The server must be **Jellyfin 12.0 or newer**.
 
@@ -89,6 +91,21 @@ Logs:
 ```bash
 ares-inspect --device c2 --app com.cinefin.app
 ```
+
+### webOS Dev Manager
+
+[webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) is a GUI over the same Developer Mode SSH session.
+
+1. Install Dev Manager from its [GitHub releases](https://github.com/webosbrew/dev-manager-desktop/releases).
+2. Enable Developer Mode and **Key Server** on the TV (§2).
+3. Add the TV: IP address, port `9922`, user `prisoner`, passphrase from the Developer Mode screen.
+4. Open the device → **Apps** → **Install** → select the downloaded `.ipk`.
+
+### Homebrew Channel
+
+If the TV **already** has [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) (typically a rooted set), you can sideload the same GitHub IPK from Homebrew Channel or from Dev Manager (which uses Homebrew Channel when it is present). Homebrew Channel installs can persist after Developer Mode expires.
+
+Cinefin is not in the Homebrew repo — install the file from [GitHub Releases](https://github.com/Ashiroen/cinefin/releases/latest), not a store listing. This document does not cover rooting a TV.
 
 ## 5. Session expiry — extend it *before* it dies
 
@@ -108,7 +125,7 @@ After an expiry you will need:
 
 ```bash
 # Dev Mode on again, Key Server on, passphrase if the key was lost
-ares-install --device c2 dist/com.cinefin.app_0.1.0_all.ipk
+ares-install --device c2 com.cinefin.app_0.1.0_all.ipk
 ares-launch --device c2 com.cinefin.app
 ```
 
@@ -116,8 +133,10 @@ Your Jellyfin login lives in the app's localStorage, so a reinstall means signin
 
 ## 6. Update
 
+Download a newer IPK from [the latest release](https://github.com/Ashiroen/cinefin/releases/latest) (or build one) and install over the existing app:
+
 ```bash
-ares-install --device c2 dist/com.cinefin.app_<new>_all.ipk
+ares-install --device c2 com.cinefin.app_<new>_all.ipk
 ```
 
 webOS replaces the previous sideload of the same id.
@@ -129,3 +148,16 @@ ares-install --device c2 --remove com.cinefin.app
 ```
 
 Or turn Developer Mode off — that removes it too.
+
+## 8. Build the IPK locally (optional)
+
+From the repo root:
+
+```bash
+npm ci
+npm run package:webos
+```
+
+This typechecks, builds the web app for Chromium 87, and runs `ares-package`. The IPK lands at `dist/ipk/com.cinefin.app_<version>_all.ipk`.
+
+The CLI is `@webos-tools/cli`. `npm run package:webos` installs it locally in the repo if it is missing. `dist/ipk` is gitignored — do not commit `.ipk` files.

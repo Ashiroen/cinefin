@@ -5,7 +5,7 @@ A fast, minimal Jellyfin client for home theater. **webOS first** (LG TVs), Andr
 It plays the original file and sends the original audio to the AV receiver untouched whenever the HDMI chain allows it. Playback decisions come from a capability table, not a copied official-client profile.
 
 - Product spec: [`docs/SPEC.md`](docs/SPEC.md)
-- Install on an LG C2: [`docs/INSTALL-webos.md`](docs/INSTALL-webos.md)
+- Install on an LG C2: [`docs/INSTALL-webos.md`](docs/INSTALL-webos.md) — download the IPK from [the latest release](https://github.com/Ashiroen/cinefin/releases/latest)
 - M1 verification notes: [`docs/VERIFICATION.md`](docs/VERIFICATION.md)
 
 ```bash
