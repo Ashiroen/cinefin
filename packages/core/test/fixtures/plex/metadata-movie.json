@@ -1,0 +1,126 @@
+{
+  "MediaContainer": {
+    "size": 1,
+    "Metadata": [
+      {
+        "ratingKey": "101",
+        "key": "/library/metadata/101",
+        "type": "movie",
+        "title": "Glass Valley",
+        "summary": "A cartographer crosses a frozen strait to find the line her father drew.",
+        "year": 2023,
+        "duration": 6840000,
+        "viewOffset": 1200000,
+        "contentRating": "R",
+        "audienceRating": 7.4,
+        "thumb": "/library/metadata/101/thumb/9",
+        "art": "/library/metadata/101/art/9",
+        "Genre": [{ "tag": "Thriller" }, { "tag": "Mystery" }],
+        "Media": [
+          {
+            "id": 9001,
+            "duration": 6840000,
+            "bitrate": 72000,
+            "width": 3840,
+            "height": 2160,
+            "container": "mkv",
+            "videoCodec": "hevc",
+            "audioCodec": "truehd",
+            "audioChannels": 8,
+            "videoResolution": "4k",
+            "videoProfile": "main 10",
+            "Part": [
+              {
+                "id": 8001,
+                "key": "/library/parts/8001/file.mkv",
+                "duration": 6840000,
+                "container": "mkv",
+                "file": "/data/movies/Glass Valley (2023).mkv",
+                "Stream": [
+                  {
+                    "id": 1,
+                    "streamType": 1,
+                    "index": 0,
+                    "codec": "hevc",
+                    "profile": "main 10",
+                    "width": 3840,
+                    "height": 2160,
+                    "displayTitle": "4K (HEVC Main 10 HDR10)",
+                    "colorTrc": "smpte2084",
+                    "bitDepth": 10,
+                    "default": true
+                  },
+                  {
+                    "id": 2,
+                    "streamType": 2,
+                    "index": 1,
+                    "codec": "truehd",
+                    "channels": 8,
+                    "language": "English",
+                    "languageCode": "eng",
+                    "displayTitle": "English (TRUEHD 7.1)",
+                    "title": "Atmos",
+                    "audioChannelLayout": "7.1",
+                    "default": true
+                  },
+                  {
+                    "id": 3,
+                    "streamType": 2,
+                    "index": 2,
+                    "codec": "dca",
+                    "profile": "MA",
+                    "channels": 8,
+                    "language": "English",
+                    "languageCode": "eng",
+                    "displayTitle": "English (DTS-HD MA 7.1)",
+                    "audioChannelLayout": "7.1"
+                  },
+                  {
+                    "id": 4,
+                    "streamType": 3,
+                    "index": 3,
+                    "codec": "srt",
+                    "languageCode": "eng",
+                    "displayTitle": "English (SRT)",
+                    "forced": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": 9002,
+            "container": "mp4",
+            "videoCodec": "h264",
+            "audioCodec": "aac",
+            "videoResolution": "1080",
+            "Part": [
+              {
+                "id": 8002,
+                "key": "/library/parts/8002/file.mp4",
+                "container": "mp4",
+                "Stream": [
+                  {
+                    "id": 11,
+                    "streamType": 1,
+                    "codec": "h264",
+                    "width": 1920,
+                    "height": 1080,
+                    "displayTitle": "1080p (H.264)"
+                  },
+                  {
+                    "id": 12,
+                    "streamType": 2,
+                    "codec": "aac",
+                    "channels": 2,
+                    "displayTitle": "English (AAC Stereo)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

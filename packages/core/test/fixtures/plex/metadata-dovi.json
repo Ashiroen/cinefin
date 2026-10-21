@@ -1,0 +1,41 @@
+{
+  "ratingKey": "404",
+  "type": "movie",
+  "title": "Dolby Valley",
+  "duration": 5400000,
+  "Media": [
+    {
+      "id": 1,
+      "container": "mkv",
+      "videoCodec": "hevc",
+      "Part": [
+        {
+          "id": 1,
+          "key": "/library/parts/404/file.mkv",
+          "Stream": [
+            {
+              "id": 1,
+              "streamType": 1,
+              "codec": "hevc",
+              "width": 3840,
+              "height": 2160,
+              "DOVIPresent": true,
+              "DOVIProfile": 8,
+              "displayTitle": "4K (HEVC Dolby Vision)",
+              "colorTrc": "smpte2084"
+            },
+            {
+              "id": 2,
+              "streamType": 2,
+              "codec": "eac3",
+              "channels": 8,
+              "title": "Dolby Atmos",
+              "displayTitle": "English (EAC3 7.1)",
+              "languageCode": "eng"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

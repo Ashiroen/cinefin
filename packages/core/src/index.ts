@@ -57,6 +57,47 @@ export {
   formatClock,
   formatRuntime,
 } from './jellyfin/progress';
+export { JellyfinServer } from './jellyfin/server';
+
+export type {
+  ServerKind,
+  PublicServer,
+  PublicUser,
+  MediaStreamLite,
+  MediaVersion,
+  CatalogItem,
+  HomeModel,
+  MediaServerAuth,
+  CodeSignIn,
+  CodeSignInPoll,
+  ImageUrlOptions,
+  OpenedPlayback,
+  ProgressReport,
+  MediaServerOptions,
+  MediaServer,
+} from './media-server/types';
+export { createMediaServer } from './media-server/create';
+export { itemToMedia } from './media-server/item-media';
+
+export { PlexServer, normalizePlexAddress } from './plex/server';
+export { PlexClient } from './plex/client';
+export {
+  PLEX_LINK_URL,
+  plexMsToTicks,
+  normalizePlexCodec,
+  plexVideoRangeType,
+  plexAudioDisplayTitle,
+  mapStream,
+  mapMediaVersion,
+  mapMetadata,
+  mapHubsToHome,
+  mapResourcesToServers,
+  pickBestConnection,
+  scoreConnection,
+  connectionUri,
+  directPlayUrl,
+  imageTranscodeUrl,
+} from './plex/map';
 
 export type {
   MediaPlayer,

@@ -1,7 +1,10 @@
 export type Route =
   | { name: 'connect'; empty?: boolean }
   | { name: 'quick' }
+  | { name: 'plex-pin' }
+  | { name: 'plex-servers' }
   | { name: 'password' }
+  | { name: 'account' }
   | { name: 'home' }
   | { name: 'details'; id: string }
   | { name: 'player'; id: string }
@@ -21,7 +24,10 @@ export function parseHash(hash: string): Route {
   if (a === 'connect' && b === 'empty') return { name: 'connect', empty: true };
   if (a === 'connect') return { name: 'connect' };
   if (a === 'signin' && b === 'quick') return { name: 'quick' };
+  if (a === 'signin' && b === 'plex') return { name: 'plex-pin' };
+  if (a === 'signin' && b === 'plex-servers') return { name: 'plex-servers' };
   if (a === 'signin' && b === 'password') return { name: 'password' };
+  if (a === 'settings' && b === 'account') return { name: 'account' };
   if (a === 'home') return { name: 'home' };
   if (a === 'item' && b) return { name: 'details', id: b };
   if (a === 'player' && b) return { name: 'player', id: b };
@@ -41,8 +47,14 @@ export function toHash(route: Route): string {
       return route.empty ? '#/connect/empty' : '#/connect';
     case 'quick':
       return '#/signin/quick';
+    case 'plex-pin':
+      return '#/signin/plex';
+    case 'plex-servers':
+      return '#/signin/plex-servers';
     case 'password':
       return '#/signin/password';
+    case 'account':
+      return '#/settings/account';
     case 'home':
       return '#/home';
     case 'details':

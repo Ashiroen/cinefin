@@ -1,0 +1,18 @@
+{
+  "MediaContainer": {
+    "Metadata": [
+      {
+        "ratingKey": "200",
+        "type": "show",
+        "title": "The Long Meridian",
+        "summary": "A cartographer crosses a frozen strait.",
+        "year": 2024,
+        "childCount": 2,
+        "leafCount": 8,
+        "thumb": "/library/metadata/200/thumb/1",
+        "art": "/library/metadata/200/art/1",
+        "Genre": [{ "tag": "Drama" }]
+      }
+    ]
+  }
+}

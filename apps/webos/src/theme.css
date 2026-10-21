@@ -339,6 +339,55 @@ input {
   opacity: 0.55;
 }
 
+.server-type-icon,
+.kind-icon-slot img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex: 0 0 auto;
+  display: block;
+}
+
+.kind-picker {
+  display: flex;
+  gap: 20px;
+  width: 920px;
+}
+
+.kind-card {
+  flex: 1;
+  min-height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--surface);
+  border-radius: 28px;
+}
+
+.kind-card.is-selected {
+  box-shadow: inset 0 0 0 2px var(--amber-dim);
+}
+
+.kind-icon-slot {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kind-icon-slot img {
+  width: 56px;
+  height: 56px;
+}
+
+.kind-label {
+  font-size: 26px;
+  font-weight: 600;
+}
+
 .chip {
   display: inline-flex;
   align-items: center;

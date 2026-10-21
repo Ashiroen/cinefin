@@ -1,5 +1,5 @@
-/** Assume http:// and port 8096 when the user types a bare host. */
-export function normalizeServerAddress(raw: string): string {
+/** Assume http:// and a default port when the user types a bare host. */
+export function normalizeServerAddress(raw: string, defaultHttpPort = '8096'): string {
   let value = raw.trim();
   if (!value) return value;
   if (!/^https?:\/\//i.test(value)) {
@@ -7,8 +7,8 @@ export function normalizeServerAddress(raw: string): string {
   }
   try {
     const url = new URL(value);
-    if (!url.port && (url.protocol === 'http:' || url.protocol === 'https:')) {
-      if (url.protocol === 'http:') url.port = '8096';
+    if (!url.port && url.protocol === 'http:') {
+      url.port = defaultHttpPort;
     }
     // Drop a trailing slash so SDK paths join cleanly.
     return url.origin;

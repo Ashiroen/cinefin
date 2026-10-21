@@ -1,5 +1,10 @@
-import { MIN_SERVER_VERSION_LABEL } from '@cinefin/core';
-import type { CatalogItem, HomeModel, PublicServer, PublicUser } from '../data/jellyfin';
+import {
+  MIN_SERVER_VERSION_LABEL,
+  type CatalogItem,
+  type HomeModel,
+  type PublicServer,
+  type PublicUser,
+} from '@cinefin/core';
 
 export const minVersion = MIN_SERVER_VERSION_LABEL;
 
@@ -10,6 +15,7 @@ export const fixtureServers: PublicServer[] = [
     address: 'http://192.168.1.20:8096',
     version: '12.1.1',
     supported: true,
+    kind: 'jellyfin',
   },
   {
     id: 'nas',
@@ -17,8 +23,23 @@ export const fixtureServers: PublicServer[] = [
     address: 'http://192.168.1.45:8096',
     version: '10.10.10',
     supported: false,
+    kind: 'jellyfin',
   },
 ];
+
+export const fixturePlexServers: PublicServer[] = [
+  {
+    id: 'plex-home',
+    name: 'Home PMS',
+    address: 'http://192.168.1.20:32400',
+    version: '1.41.3',
+    supported: true,
+    kind: 'plex',
+    local: true,
+  },
+];
+
+export const fixturePlexPin = 'WXYZ';
 
 export const fixtureUsers: PublicUser[] = [
   { id: 'v', name: 'Vojtěch' },

@@ -1,11 +1,13 @@
 /**
  * 1920×1080 screenshots of every boarded preview route, then a live
- * Jellyfin walk (manual address → password → home → details → play).
+ * Jellyfin walk (manual address → password → home → details → play)
+ * and a mocked Plex PIN → Home walk.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createMockPlexServer } from './mock-plex.mjs';
 
 const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer-core');
@@ -35,9 +37,20 @@ const boards = [
   '04c',
   '05',
   '05b',
+  'plex-pin',
+  'plex-home',
 ];
 
 const notes = [];
+
+const plexPort = Number(process.env.PLEX_MOCK_PORT || 18240);
+const plexHost = process.env.PLEX_MOCK_HOST || '127.0.0.1';
+const plexOrigin = `http://${plexHost}:${plexPort}`;
+const mockPlex = createMockPlexServer({ host: plexHost, port: plexPort });
+await new Promise((resolve, reject) => {
+  mockPlex.once('error', reject);
+  mockPlex.listen(plexPort, plexHost, resolve);
+});
 
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME || '/usr/bin/google-chrome',
@@ -48,6 +61,9 @@ const browser = await puppeteer.launch({
 
 const page = await browser.newPage();
 page.setDefaultTimeout(20000);
+await page.evaluateOnNewDocument((url) => {
+  window.__CINEFIN_PLEX_TV__ = url;
+}, plexOrigin);
 page.on('pageerror', (err) => notes.push(`pageerror: ${err.message}`));
 page.on('console', (msg) => {
   if (msg.type() === 'error') notes.push(`console.error: ${msg.text()}`);
@@ -132,71 +148,139 @@ if (!pickedUser) {
 if (await page.$('[data-testid="password"]')) {
   await fillReactInput('[data-testid="password"]', PASS);
 }
-await page.click('[data-focusable="signin"]');
+if (await page.$('[data-focusable="signin"]')) {
+  await page.click('[data-focusable="signin"]');
+  try {
+    await page.waitForFunction(() => location.hash.includes('home'), { timeout: 8000 });
+  } catch {
+    const err = await page.evaluate(
+      () => document.querySelector('[data-testid="signin-error"]')?.textContent || '',
+    );
+    notes.push(`Sign-in did not reach Home${err ? ` (${err})` : ''}`);
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        Boolean(document.querySelector('[data-focusable^="lib-"], [data-focusable^="resume-"]')) ||
+        document.body.innerText.includes('Your library is empty'),
+      { timeout: 10000 },
+    );
+  } catch {
+    notes.push('Home never rendered a row or empty state');
+  }
+  await new Promise((r) => setTimeout(r, 400));
+  await shot('live-03-home');
+  notes.push(`hash after signin: ${await page.evaluate(() => location.hash)}`);
+  notes.push(`home text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 400)}`);
+
+  const card = await page.$('[data-focusable^="lib-"], [data-focusable^="resume-"]');
+  if (card) {
+    await card.click();
+    await page.waitForFunction(() => location.hash.includes('item'), { timeout: 8000 }).catch(() => {
+      notes.push('Poster click did not open Details');
+    });
+    await new Promise((r) => setTimeout(r, 600));
+  }
+  await shot('live-04-details');
+
+  const play = await page.$('[data-focusable="play"]');
+  if (play) {
+    await play.click();
+    await page
+      .waitForFunction(
+        () => {
+          const v = document.querySelector('video');
+          return Boolean(v && (v.currentSrc || v.readyState > 0) && !v.error);
+        },
+        { timeout: 10000 },
+      )
+      .catch(() => notes.push('Video never started'));
+    await new Promise((r) => setTimeout(r, 800));
+  }
+  await shot('live-05-player');
+  notes.push(`hash after play: ${await page.evaluate(() => location.hash)}`);
+  const videoState = await page.evaluate(() => {
+    const v = document.querySelector('video');
+    if (!v) return { present: false };
+    return {
+      present: true,
+      src: v.currentSrc || v.src,
+      paused: v.paused,
+      time: v.currentTime,
+      duration: Number.isFinite(v.duration) ? v.duration : null,
+      error: v.error ? v.error.message || String(v.error.code) : null,
+      readyState: v.readyState,
+    };
+  });
+  notes.push(`video: ${JSON.stringify(videoState)}`);
+} else {
+  notes.push('Jellyfin password screen not reached — skipped live JF walk');
+}
+
+await page.evaluate((url) => {
+  window.__CINEFIN_PLEX_TV__ = url;
+  localStorage.setItem('cinefin.plexTv', url);
+}, plexOrigin);
+notes.push(
+  `plex override before walk: ${await page.evaluate(() => window.__CINEFIN_PLEX_TV__ || 'unset')}`,
+);
+await page.goto(`${APP}/#/connect`, { waitUntil: 'networkidle0' });
+await page.waitForSelector('[data-testid="server-kind-picker"]');
+const plexKind = await page.$('[data-focusable="kind-plex"]');
+if (plexKind) await plexKind.click();
+await new Promise((r) => setTimeout(r, 250));
+await shot('live-plex-00-kind');
+const plexSignIn = await page.$('[data-focusable="plex-pin"]');
+if (plexSignIn) await plexSignIn.click();
 try {
-  await page.waitForFunction(() => location.hash.includes('home'), { timeout: 8000 });
+  await page.waitForFunction(() => location.hash.includes('signin/plex'), { timeout: 8000 });
 } catch {
-  const err = await page.evaluate(
-    () => document.querySelector('[data-testid="signin-error"]')?.textContent || '',
+  notes.push('Plex PIN route did not open');
+}
+await page.waitForFunction(
+  () => (document.querySelector('.qc-tile')?.textContent || '').trim().length > 0,
+  { timeout: 8000 },
+).catch(() => notes.push('Plex PIN tiles empty'));
+await new Promise((r) => setTimeout(r, 400));
+await shot('live-plex-01-pin');
+notes.push(`hash after plex pin: ${await page.evaluate(() => location.hash)}`);
+notes.push(`plex pin text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 240)}`);
+
+try {
+  await page.waitForFunction(
+    () => location.hash.includes('plex-servers') || location.hash.includes('home'),
+    { timeout: 12000 },
   );
-  notes.push(`Sign-in did not reach Home${err ? ` (${err})` : ''}`);
+} catch {
+  notes.push('Plex PIN never completed');
+}
+await new Promise((r) => setTimeout(r, 400));
+await shot('live-plex-02-servers');
+
+if ((await page.evaluate(() => location.hash)).includes('plex-servers')) {
+  const card = await page.$('[data-focusable^="server-"]');
+  if (card) await card.click();
+  await page.waitForFunction(() => location.hash.includes('home'), { timeout: 8000 }).catch(() => {
+    notes.push('Plex server pick did not reach Home');
+  });
 }
 try {
   await page.waitForFunction(
     () =>
-      Boolean(document.querySelector('[data-focusable^="lib-"], [data-focusable^="resume-"]')) ||
+      document.body.innerText.includes('Glass Valley') ||
+      document.body.innerText.includes('The Ice Line') ||
       document.body.innerText.includes('Your library is empty'),
     { timeout: 10000 },
   );
 } catch {
-  notes.push('Home never rendered a row or empty state');
+  notes.push('Plex Home never rendered mock library rows');
 }
 await new Promise((r) => setTimeout(r, 400));
-await shot('live-03-home');
-notes.push(`hash after signin: ${await page.evaluate(() => location.hash)}`);
-notes.push(`home text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 400)}`);
-
-const card = await page.$('[data-focusable^="lib-"], [data-focusable^="resume-"]');
-if (card) {
-  await card.click();
-  await page.waitForFunction(() => location.hash.includes('item'), { timeout: 8000 }).catch(() => {
-    notes.push('Poster click did not open Details');
-  });
-  await new Promise((r) => setTimeout(r, 600));
-}
-await shot('live-04-details');
-
-const play = await page.$('[data-focusable="play"]');
-if (play) {
-  await play.click();
-  await page
-    .waitForFunction(
-      () => {
-        const v = document.querySelector('video');
-        return Boolean(v && (v.currentSrc || v.readyState > 0) && !v.error);
-      },
-      { timeout: 10000 },
-    )
-    .catch(() => notes.push('Video never started'));
-  await new Promise((r) => setTimeout(r, 800));
-}
-await shot('live-05-player');
-notes.push(`hash after play: ${await page.evaluate(() => location.hash)}`);
-const videoState = await page.evaluate(() => {
-  const v = document.querySelector('video');
-  if (!v) return { present: false };
-  return {
-    present: true,
-    src: v.currentSrc || v.src,
-    paused: v.paused,
-    time: v.currentTime,
-    duration: Number.isFinite(v.duration) ? v.duration : null,
-    error: v.error ? v.error.message || String(v.error.code) : null,
-    readyState: v.readyState,
-  };
-});
-notes.push(`video: ${JSON.stringify(videoState)}`);
+await shot('live-plex-03-home');
+notes.push(`hash after plex home: ${await page.evaluate(() => location.hash)}`);
+notes.push(`plex home text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 400)}`);
 
 writeFileSync(join(out, 'notes.txt'), `${notes.join('\n')}\n`);
 await browser.close();
+await new Promise((resolve) => mockPlex.close(resolve));
 console.log('done', notes);

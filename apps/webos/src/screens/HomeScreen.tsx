@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { ticksToSeconds, formatRuntime } from '@cinefin/core';
+import { ticksToSeconds, formatRuntime, type CatalogItem, type HomeModel } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
 import { IconSearch, IconSettings } from '../components/Icons';
-import type { CatalogItem, HomeModel } from '../data/jellyfin';
-import { imageUrl } from '../data/jellyfin';
+import { imageUrl } from '../data/media';
 
 function tint(name: string): string {
   const hues = [20, 28, 210, 230, 160, 340, 40, 200];

@@ -14,6 +14,7 @@ export default tseslint.config(
       '.jellyfin-data/**',
       'scripts/verify-browser.mjs',
       'scripts/capture-screenshots.mjs',
+      'scripts/mock-plex.mjs',
     ],
   },
   js.configs.recommended,
