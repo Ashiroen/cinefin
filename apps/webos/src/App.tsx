@@ -220,7 +220,10 @@ export function App() {
         }, 2000);
         return () => window.clearInterval(tick);
       })
-      .catch(() => setQc((c) => ({ ...c, code: fixturePlexPin })));
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : 'Plex PIN failed');
+        setQc((c) => ({ ...c, code: fixturePlexPin }));
+      });
     return () => {
       stop = true;
     };
@@ -408,6 +411,7 @@ export function App() {
           savedAccounts={getSession().accounts}
           onPickAccount={activateAccount}
           onPlexSignIn={() => {
+            setError(null);
             setPendingPlexAddress(null);
             go({ name: 'plex-pin' });
           }}
@@ -445,17 +449,24 @@ export function App() {
 
   if (route.name === 'plex-pin') {
     return (
-      <QuickConnectScreen
-        serverLabel={picked ? `${picked.name} · ${picked.address.replace(/^https?:\/\//, '')}` : 'plex.tv/link'}
-        code={qc.code || plexChallenge?.code || fixturePlexPin}
-        remaining={qc.remaining}
-        title="Sign in with a Plex PIN"
-        help="On your phone or computer, open plex.tv/link and enter this code."
-        waiting="Waiting for Plex"
-        showPassword={false}
-        onPassword={() => undefined}
-        onChangeServer={() => go({ name: 'connect' })}
-      />
+      <>
+        <QuickConnectScreen
+          serverLabel={picked ? `${picked.name} · ${picked.address.replace(/^https?:\/\//, '')}` : 'plex.tv/link'}
+          code={qc.code || plexChallenge?.code || fixturePlexPin}
+          remaining={qc.remaining}
+          title="Sign in with a Plex PIN"
+          help="On your phone or computer, open plex.tv/link and enter this code."
+          waiting="Waiting for Plex"
+          showPassword={false}
+          onPassword={() => undefined}
+          onChangeServer={() => go({ name: 'connect' })}
+        />
+        {error ? (
+          <div className="caption" style={{ position: 'absolute', bottom: 24, left: 'var(--safe-x)' }}>
+            {error}
+          </div>
+        ) : null}
+      </>
     );
   }
 

@@ -46,7 +46,7 @@ const notes = [];
 const plexPort = Number(process.env.PLEX_MOCK_PORT || 18240);
 const plexHost = process.env.PLEX_MOCK_HOST || '127.0.0.1';
 const plexOrigin = `http://${plexHost}:${plexPort}`;
-const mockPlex = createMockPlexServer();
+const mockPlex = createMockPlexServer({ host: plexHost, port: plexPort });
 await new Promise((resolve, reject) => {
   mockPlex.once('error', reject);
   mockPlex.listen(plexPort, plexHost, resolve);
@@ -148,71 +148,82 @@ if (!pickedUser) {
 if (await page.$('[data-testid="password"]')) {
   await fillReactInput('[data-testid="password"]', PASS);
 }
-await page.click('[data-focusable="signin"]');
-try {
-  await page.waitForFunction(() => location.hash.includes('home'), { timeout: 8000 });
-} catch {
-  const err = await page.evaluate(
-    () => document.querySelector('[data-testid="signin-error"]')?.textContent || '',
-  );
-  notes.push(`Sign-in did not reach Home${err ? ` (${err})` : ''}`);
-}
-try {
-  await page.waitForFunction(
-    () =>
-      Boolean(document.querySelector('[data-focusable^="lib-"], [data-focusable^="resume-"]')) ||
-      document.body.innerText.includes('Your library is empty'),
-    { timeout: 10000 },
-  );
-} catch {
-  notes.push('Home never rendered a row or empty state');
-}
-await new Promise((r) => setTimeout(r, 400));
-await shot('live-03-home');
-notes.push(`hash after signin: ${await page.evaluate(() => location.hash)}`);
-notes.push(`home text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 400)}`);
-
-const card = await page.$('[data-focusable^="lib-"], [data-focusable^="resume-"]');
-if (card) {
-  await card.click();
-  await page.waitForFunction(() => location.hash.includes('item'), { timeout: 8000 }).catch(() => {
-    notes.push('Poster click did not open Details');
-  });
-  await new Promise((r) => setTimeout(r, 600));
-}
-await shot('live-04-details');
-
-const play = await page.$('[data-focusable="play"]');
-if (play) {
-  await play.click();
-  await page
-    .waitForFunction(
-      () => {
-        const v = document.querySelector('video');
-        return Boolean(v && (v.currentSrc || v.readyState > 0) && !v.error);
-      },
+if (await page.$('[data-focusable="signin"]')) {
+  await page.click('[data-focusable="signin"]');
+  try {
+    await page.waitForFunction(() => location.hash.includes('home'), { timeout: 8000 });
+  } catch {
+    const err = await page.evaluate(
+      () => document.querySelector('[data-testid="signin-error"]')?.textContent || '',
+    );
+    notes.push(`Sign-in did not reach Home${err ? ` (${err})` : ''}`);
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        Boolean(document.querySelector('[data-focusable^="lib-"], [data-focusable^="resume-"]')) ||
+        document.body.innerText.includes('Your library is empty'),
       { timeout: 10000 },
-    )
-    .catch(() => notes.push('Video never started'));
-  await new Promise((r) => setTimeout(r, 800));
-}
-await shot('live-05-player');
-notes.push(`hash after play: ${await page.evaluate(() => location.hash)}`);
-const videoState = await page.evaluate(() => {
-  const v = document.querySelector('video');
-  if (!v) return { present: false };
-  return {
-    present: true,
-    src: v.currentSrc || v.src,
-    paused: v.paused,
-    time: v.currentTime,
-    duration: Number.isFinite(v.duration) ? v.duration : null,
-    error: v.error ? v.error.message || String(v.error.code) : null,
-    readyState: v.readyState,
-  };
-});
-notes.push(`video: ${JSON.stringify(videoState)}`);
+    );
+  } catch {
+    notes.push('Home never rendered a row or empty state');
+  }
+  await new Promise((r) => setTimeout(r, 400));
+  await shot('live-03-home');
+  notes.push(`hash after signin: ${await page.evaluate(() => location.hash)}`);
+  notes.push(`home text: ${(await page.evaluate(() => document.body.innerText)).slice(0, 400)}`);
 
+  const card = await page.$('[data-focusable^="lib-"], [data-focusable^="resume-"]');
+  if (card) {
+    await card.click();
+    await page.waitForFunction(() => location.hash.includes('item'), { timeout: 8000 }).catch(() => {
+      notes.push('Poster click did not open Details');
+    });
+    await new Promise((r) => setTimeout(r, 600));
+  }
+  await shot('live-04-details');
+
+  const play = await page.$('[data-focusable="play"]');
+  if (play) {
+    await play.click();
+    await page
+      .waitForFunction(
+        () => {
+          const v = document.querySelector('video');
+          return Boolean(v && (v.currentSrc || v.readyState > 0) && !v.error);
+        },
+        { timeout: 10000 },
+      )
+      .catch(() => notes.push('Video never started'));
+    await new Promise((r) => setTimeout(r, 800));
+  }
+  await shot('live-05-player');
+  notes.push(`hash after play: ${await page.evaluate(() => location.hash)}`);
+  const videoState = await page.evaluate(() => {
+    const v = document.querySelector('video');
+    if (!v) return { present: false };
+    return {
+      present: true,
+      src: v.currentSrc || v.src,
+      paused: v.paused,
+      time: v.currentTime,
+      duration: Number.isFinite(v.duration) ? v.duration : null,
+      error: v.error ? v.error.message || String(v.error.code) : null,
+      readyState: v.readyState,
+    };
+  });
+  notes.push(`video: ${JSON.stringify(videoState)}`);
+} else {
+  notes.push('Jellyfin password screen not reached — skipped live JF walk');
+}
+
+await page.evaluate((url) => {
+  window.__CINEFIN_PLEX_TV__ = url;
+  localStorage.setItem('cinefin.plexTv', url);
+}, plexOrigin);
+notes.push(
+  `plex override before walk: ${await page.evaluate(() => window.__CINEFIN_PLEX_TV__ || 'unset')}`,
+);
 await page.goto(`${APP}/#/connect`, { waitUntil: 'networkidle0' });
 await page.waitForSelector('[data-testid="server-kind-picker"]');
 const plexKind = await page.$('[data-focusable="kind-plex"]');
@@ -256,12 +267,13 @@ if ((await page.evaluate(() => location.hash)).includes('plex-servers')) {
 try {
   await page.waitForFunction(
     () =>
-      Boolean(document.querySelector('[data-focusable^="lib-"], [data-focusable^="resume-"]')) ||
+      document.body.innerText.includes('Glass Valley') ||
+      document.body.innerText.includes('The Ice Line') ||
       document.body.innerText.includes('Your library is empty'),
     { timeout: 10000 },
   );
 } catch {
-  notes.push('Plex Home never rendered a row');
+  notes.push('Plex Home never rendered mock library rows');
 }
 await new Promise((r) => setTimeout(r, 400));
 await shot('live-plex-03-home');

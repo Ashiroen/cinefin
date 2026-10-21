@@ -91,11 +91,14 @@ function empty(res, status = 204) {
   res.end();
 }
 
-export function createMockPlexServer() {
+export function createMockPlexServer(opts = {}) {
+  const host = opts.host || HOST;
+  const port = Number(opts.port || PORT);
   pinPolls = 0;
   return createServer((req, res) => {
-    const url = new URL(req.url || '/', `http://${HOST}:${PORT}`);
+    const url = new URL(req.url || '/', `http://${host}:${port}`);
     const path = url.pathname;
+    console.log('mock-plex', req.method, path);
 
     if (req.method === 'OPTIONS') {
       empty(res, 204);
@@ -129,9 +132,9 @@ export function createMockPlexServer() {
           connections: [
             {
               protocol: 'http',
-              address: HOST,
-              port: PORT,
-              uri: `http://${HOST}:${PORT}`,
+              address: host,
+              port,
+              uri: `http://${host}:${port}`,
               local: true,
               relay: false,
               IPv6: false,

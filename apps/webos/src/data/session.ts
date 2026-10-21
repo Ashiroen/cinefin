@@ -128,7 +128,12 @@ export function clientInfo() {
 export function plexTvOverride(): string | undefined {
   if (typeof window === 'undefined') return undefined;
   const w = window as Window & { __CINEFIN_PLEX_TV__?: string };
-  return w.__CINEFIN_PLEX_TV__;
+  if (w.__CINEFIN_PLEX_TV__) return w.__CINEFIN_PLEX_TV__;
+  try {
+    return localStorage.getItem('cinefin.plexTv') ?? undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export type { ServerKind };

@@ -38,8 +38,13 @@ export class PlexClient {
   >;
 
   constructor(opts: PlexClientOptions) {
-    this.plexTvUrl = (opts.plexTvUrl ?? 'https://plex.tv').replace(/\/+$/, '');
-    this.fetchImpl = opts.fetchImpl ?? fetch;
+    const injected =
+      typeof globalThis !== 'undefined'
+        ? (globalThis as { __CINEFIN_PLEX_TV__?: string }).__CINEFIN_PLEX_TV__
+        : undefined;
+    this.plexTvUrl = (opts.plexTvUrl ?? injected ?? 'https://plex.tv').replace(/\/+$/, '');
+    const fallback: typeof fetch = (input, init) => fetch(input, init);
+    this.fetchImpl = opts.fetchImpl ?? fallback;
     this.ident = {
       clientIdentifier: opts.clientIdentifier,
       product: opts.product ?? CLIENT_NAME,
@@ -78,7 +83,17 @@ export class PlexClient {
 
   private async request<T>(url: string, init: RequestInit, token?: string): Promise<T> {
     const headers = { ...this.headers(token), ...(init.headers as Record<string, string> | undefined) };
-    const res = await this.fetchImpl(url, { ...init, headers });
+    const ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ac ? setTimeout(() => ac.abort(), 8000) : undefined;
+    let res: Response;
+    try {
+      res = await this.fetchImpl(url, { ...init, headers, signal: ac?.signal });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`Plex request failed ${url} — ${msg}`);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(`Plex ${res.status} ${url}${text ? ` — ${text.slice(0, 180)}` : ''}`);
