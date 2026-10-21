@@ -35,7 +35,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
       - uses: android-actions/setup-android@v3
+        with:
+          # The obsolete `tools` package is gone from sdkmanager; do not install it.
+          packages: 'platform-tools platforms;android-36 build-tools;35.0.0'
       - run: ./gradlew :androidtv:testDebugUnitTest :androidtv:lintDebug :androidtv:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
