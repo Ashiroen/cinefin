@@ -1,4 +1,6 @@
 Copyright (c) 2026 Cinefin contributors.
 
 Cinefin is proprietary software. All rights reserved.
-The @jellyfin/sdk dependency is used unmodified and remains under its own LGPL license.
+The @jellyfin/sdk (TypeScript, MPL-2.0) and org.jellyfin.sdk:jellyfin-core
+(Kotlin, LGPL-3.0) dependencies are used unmodified and remain under their
+own licenses.

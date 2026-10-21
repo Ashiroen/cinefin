@@ -1,0 +1,3 @@
+-keep class org.jellyfin.sdk.** { *; }
+-keep class androidx.media3.** { *; }
+-dontwarn org.jellyfin.sdk.**

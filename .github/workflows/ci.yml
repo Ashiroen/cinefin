@@ -26,3 +26,23 @@ jobs:
           name: cinefin-ipk
           path: dist/ipk/*.ipk
           if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          # The obsolete `tools` package is gone from sdkmanager; do not install it.
+          packages: 'platform-tools platforms;android-36 build-tools;35.0.0'
+      - run: ./gradlew :androidtv:testDebugUnitTest :androidtv:lintDebug :androidtv:assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cinefin-androidtv-apk
+          path: apps/androidtv/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

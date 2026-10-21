@@ -1,0 +1,53 @@
+name: APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;35.0.0'
+      - name: Decode Android keystore
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+          cat > keystore.properties <<EOF
+          storeFile=release.keystore
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+      - name: Build APK
+        run: |
+          mkdir -p dist/apk
+          if [ -f keystore.properties ]; then
+            ./gradlew :androidtv:lintDebug :androidtv:testDebugUnitTest :androidtv:assembleRelease
+            cp apps/androidtv/build/outputs/apk/release/*.apk dist/apk/
+          else
+            ./gradlew :androidtv:lintDebug :androidtv:testDebugUnitTest :androidtv:assembleDebug
+            cp apps/androidtv/build/outputs/apk/debug/*.apk dist/apk/
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cinefin-androidtv-apk
+          path: dist/apk/*.apk
+          if-no-files-found: error
