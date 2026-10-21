@@ -1,7 +1,13 @@
 node_modules/
 dist/
 dist/ipk/
+dist/apk/
 build/
+.gradle/
+local.properties
+keystore.properties
+*.jks
+*.keystore
 .vite/
 *.log
 .DS_Store

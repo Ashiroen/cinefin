@@ -16,7 +16,11 @@
     "dev": "npm run dev -w @cinefin/webos",
     "package:webos": "npm run build && node scripts/package-webos.mjs",
     "verify:browser": "node scripts/verify-browser.mjs",
-    "capture:screenshots": "node scripts/capture-screenshots.mjs"
+    "capture:screenshots": "node scripts/capture-screenshots.mjs",
+    "android:assemble": "./gradlew :androidtv:assembleDebug",
+    "android:test": "./gradlew :androidtv:testDebugUnitTest",
+    "android:lint": "./gradlew :androidtv:lintDebug",
+    "package:androidtv": "./gradlew :androidtv:assembleDebug :androidtv:copyApkToDist"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

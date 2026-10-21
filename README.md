@@ -1,11 +1,12 @@
 # Cinefin
 
-A fast, minimal Jellyfin client for home theater. **webOS first** (LG TVs), Android TV later.
+A fast, minimal Jellyfin client for home theater. **webOS** (LG TVs) and **Google TV / Android TV** (Shield).
 
 It plays the original file and sends the original audio to the AV receiver untouched whenever the HDMI chain allows it. Playback decisions come from a capability table, not a copied official-client profile.
 
 - Product spec: [`docs/SPEC.md`](docs/SPEC.md)
 - Install on an LG C2: [`docs/INSTALL-webos.md`](docs/INSTALL-webos.md) — download the IPK from [the latest release](https://github.com/Ashiroen/cinefin/releases/latest)
+- Install on Shield / Google TV: [`docs/androidtv.md`](docs/androidtv.md)
 - M1 verification notes: [`docs/VERIFICATION.md`](docs/VERIFICATION.md)
 
 ```bash
@@ -15,6 +16,7 @@ npm run typecheck
 npm run lint
 npm run dev          # browser, 1920×1080
 npm run package:webos
+./gradlew assembleDebug   # Android TV APK
 ```
 
 App id: `com.cinefin.app`. Preview a design board with `#/preview/00a` (through `05b`).
