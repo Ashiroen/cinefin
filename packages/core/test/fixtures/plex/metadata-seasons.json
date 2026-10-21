@@ -1,0 +1,22 @@
+{
+  "MediaContainer": {
+    "Metadata": [
+      {
+        "ratingKey": "210",
+        "type": "season",
+        "title": "Season 1",
+        "parentTitle": "The Long Meridian",
+        "index": 1,
+        "leafCount": 5
+      },
+      {
+        "ratingKey": "220",
+        "type": "season",
+        "title": "Season 2",
+        "parentTitle": "The Long Meridian",
+        "index": 2,
+        "leafCount": 3
+      }
+    ]
+  }
+}

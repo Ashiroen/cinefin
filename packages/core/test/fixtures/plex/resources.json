@@ -1,0 +1,77 @@
+[
+  {
+    "name": "Home PMS",
+    "product": "Plex Media Server",
+    "productVersion": "1.41.3.9314",
+    "platform": "Linux",
+    "clientIdentifier": "machine-home-abc",
+    "provides": "server",
+    "owned": true,
+    "accessToken": "server-token-home",
+    "connections": [
+      {
+        "protocol": "https",
+        "address": "203.0.113.10",
+        "port": 32400,
+        "uri": "https://203-0-113-10.remote.plex.direct:32400",
+        "local": false,
+        "relay": false,
+        "IPv6": false
+      },
+      {
+        "protocol": "http",
+        "address": "192.168.1.20",
+        "port": 32400,
+        "uri": "http://192.168.1.20:32400",
+        "local": true,
+        "relay": false,
+        "IPv6": false
+      },
+      {
+        "protocol": "https",
+        "address": "192.168.1.20",
+        "port": 32400,
+        "uri": "https://192-168-1-20.remote.plex.direct:32400",
+        "local": true,
+        "relay": false,
+        "IPv6": false
+      },
+      {
+        "protocol": "https",
+        "address": "10.0.0.1",
+        "port": 8443,
+        "uri": "https://10-0-0-1.relay.plex.direct:8443",
+        "local": false,
+        "relay": true,
+        "IPv6": false
+      }
+    ]
+  },
+  {
+    "name": "Phone",
+    "product": "Plex for Android",
+    "provides": "player,controller",
+    "clientIdentifier": "phone-1",
+    "connections": []
+  },
+  {
+    "name": "Friend share",
+    "product": "Plex Media Server",
+    "productVersion": "1.40.0.7998",
+    "clientIdentifier": "machine-friend",
+    "provides": "server",
+    "owned": false,
+    "accessToken": "shared-token",
+    "connections": [
+      {
+        "protocol": "https",
+        "address": "198.51.100.4",
+        "port": 443,
+        "uri": "https://friend.plex.direct:443",
+        "local": false,
+        "relay": false,
+        "IPv6": false
+      }
+    ]
+  }
+]

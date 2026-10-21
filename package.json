@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "Cinefin — a Jellyfin client for home theater (webOS first)",
+  "description": "Cinefin — a Jellyfin and Plex client for home theater (webOS first)",
   "workspaces": [
     "packages/core",
     "apps/webos"

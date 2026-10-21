@@ -1,8 +1,13 @@
-import { formatClock, formatRuntime, ticksToSeconds } from '@cinefin/core';
+import {
+  formatClock,
+  formatRuntime,
+  ticksToSeconds,
+  type CatalogItem,
+  type MediaStreamLite,
+} from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { IconSearch, IconSettings } from '../components/Icons';
-import type { CatalogItem, MediaStreamLite } from '../data/jellyfin';
-import { imageUrl } from '../data/jellyfin';
+import { imageUrl } from '../data/media';
 import { cast as fixtureCast } from '../preview/fixtures';
 
 export function DetailsScreen({

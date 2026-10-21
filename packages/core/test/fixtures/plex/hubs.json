@@ -1,0 +1,89 @@
+{
+  "MediaContainer": {
+    "size": 3,
+    "Hub": [
+      {
+        "hubIdentifier": "home.continue",
+        "title": "Continue Watching",
+        "type": "mixed",
+        "context": "hub.home.continue",
+        "Metadata": [
+          {
+            "ratingKey": "201",
+            "type": "episode",
+            "title": "The Ice Line",
+            "grandparentTitle": "The Long Meridian",
+            "parentTitle": "Season 1",
+            "parentIndex": 1,
+            "index": 5,
+            "year": 2024,
+            "duration": 8280000,
+            "viewOffset": 4360000,
+            "summary": "A cartographer crosses a frozen strait.",
+            "thumb": "/library/metadata/201/thumb/1",
+            "art": "/library/metadata/200/art/1"
+          }
+        ]
+      },
+      {
+        "hubIdentifier": "home.ondeck",
+        "title": "On Deck",
+        "type": "episode",
+        "context": "hub.tv.ondeck",
+        "Metadata": [
+          {
+            "ratingKey": "310",
+            "type": "episode",
+            "title": "Harbour Lights",
+            "grandparentTitle": "Northbound",
+            "parentIndex": 2,
+            "index": 1,
+            "duration": 3240000
+          }
+        ]
+      },
+      {
+        "hubIdentifier": "movie.recentlyadded",
+        "title": "Recently Added Movies",
+        "type": "movie",
+        "librarySectionID": 1,
+        "librarySectionTitle": "Movies",
+        "Metadata": [
+          {
+            "ratingKey": "101",
+            "type": "movie",
+            "title": "Glass Valley",
+            "year": 2023,
+            "duration": 6840000,
+            "contentRating": "R",
+            "audienceRating": 7.4,
+            "Genre": [{ "tag": "Thriller" }]
+          },
+          {
+            "ratingKey": "102",
+            "type": "movie",
+            "title": "Saltwind",
+            "year": 2022,
+            "duration": 5940000
+          }
+        ]
+      },
+      {
+        "hubIdentifier": "show.recentlyadded",
+        "title": "Recently Added TV",
+        "type": "show",
+        "librarySectionID": 2,
+        "librarySectionTitle": "TV Shows",
+        "Metadata": [
+          {
+            "ratingKey": "200",
+            "type": "show",
+            "title": "The Long Meridian",
+            "year": 2024,
+            "childCount": 8
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,7 +1,7 @@
+import type { PublicUser } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
 import { IconLock } from '../components/Icons';
-import type { PublicUser } from '../data/jellyfin';
 
 const ORB = ['#6b4a32', '#4a3a52', '#2f4a36', '#2a3a4a', '#2a2a2e'];
 
@@ -11,16 +11,25 @@ export function QuickConnectScreen({
   remaining,
   onPassword,
   onChangeServer,
+  title = 'Sign in with Quick Connect',
+  help = 'On your phone or computer, open Jellyfin › Quick Connect and enter this code.',
+  waiting = 'Waiting for approval',
+  showPassword = true,
 }: {
   serverLabel: string;
   code: string;
   remaining: string;
   onPassword: () => void;
   onChangeServer: () => void;
+  title?: string;
+  help?: string;
+  waiting?: string;
+  showPassword?: boolean;
 }) {
-  const chars = (code || '      ').padEnd(6, ' ').slice(0, 6).split('');
+  const width = Math.max(4, Math.min(8, (code || '    ').length));
+  const chars = (code || '').padEnd(width, ' ').slice(0, width).split('');
   return (
-    <FocusRoot initial="password">
+    <FocusRoot initial={showPassword ? 'password' : 'change'}>
       <div className="screen">
         <div className="top-bar">
           <Logo size={36} />
@@ -28,7 +37,7 @@ export function QuickConnectScreen({
         </div>
         <div className="center-col" style={{ justifyContent: 'center', paddingTop: 0 }}>
           <h1 className="h1" style={{ marginBottom: 36 }}>
-            Sign in with Quick Connect
+            {title}
           </h1>
           <div className="qc-row" style={{ marginBottom: 28 }}>
             {chars.map((c, i) => (
@@ -38,15 +47,17 @@ export function QuickConnectScreen({
             ))}
           </div>
           <p className="qc-help" style={{ marginBottom: 40 }}>
-            On your phone or computer, open Jellyfin › Quick Connect and enter this code.
+            {help}
           </p>
           <p className="muted" style={{ marginBottom: 28, display: 'flex', alignItems: 'center', gap: 12 }}>
             <span className="spinner" aria-hidden />
-            Waiting for approval · Code refreshes in {remaining}
+            {waiting} · Code refreshes in {remaining}
           </p>
-          <Focusable id="password" className="btn btn-wide" onSelect={onPassword}>
-            Use password instead
-          </Focusable>
+          {showPassword ? (
+            <Focusable id="password" className="btn btn-wide" onSelect={onPassword}>
+              Use password instead
+            </Focusable>
+          ) : null}
           <Focusable
             id="change"
             className="btn btn-ghost"

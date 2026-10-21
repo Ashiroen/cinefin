@@ -2,6 +2,8 @@
 
 Browser walk: 1920×1080 Chromium against Jellyfin 12.2.0 in Docker on this VM. Preview routes (`#/preview/00a`–`05b`) use board fixtures. Live routes used a real login (`Vojtech` / password) after `/Users/Public` returned `[]`.
 
+Plex is verified with `scripts/mock-plex.mjs` (PIN + Home). There is no real PMS on this VM — see `docs/MEDIA-SERVERS.md`.
+
 Typecheck, lint, 47 unit tests, production build, and `ares-package` → `dist/ipk/com.cinefin.app_0.1.0_all.ipk` all passed.
 
 ## Live walk (this VM)

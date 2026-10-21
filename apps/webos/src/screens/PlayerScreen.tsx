@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
-import { formatClock, type PlaybackDecision } from '@cinefin/core';
+import { formatClock, type CatalogItem, type PlaybackDecision } from '@cinefin/core';
 import { FocusRoot, Focusable } from '../focus/FocusRoot';
-import type { CatalogItem } from '../data/jellyfin';
 
 const STATE_CHIP_COL = 460;
 

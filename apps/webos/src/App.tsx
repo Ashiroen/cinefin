@@ -6,33 +6,27 @@ import {
   cloneTable,
   decidePlayback,
   findRow,
+  itemToMedia,
   randomId,
+  ticksToSeconds,
   type CapabilityTable,
+  type CatalogItem,
+  type CodeSignIn,
   type ConvertTargetId,
+  type HomeModel,
   type PlaybackDecision,
+  type PublicServer,
+  type PublicUser,
+  type ServerKind,
 } from '@cinefin/core';
 import { parseHash, go, type Route } from './route';
 import { discoverServers } from './platform/discovery';
-import {
-  fetchPublicServer,
-  fetchPublicUsers,
-  finishQuickConnect,
-  itemToMedia,
-  loadHome,
-  loadItem,
-  loginByName,
-  openPlayback,
-  pollQuickConnect,
-  reportPlaying,
-  startQuickConnect,
-  type CatalogItem,
-  type HomeModel,
-  type PublicServer,
-  type PublicUser,
-} from './data/jellyfin';
-import { getSession, setAccount, setTable } from './data/session';
+import { getMediaServer, resetMediaServer } from './data/media';
+import { getSession, removeAccount, setAccount, setTable, type StoredAccount } from './data/session';
 import { confirmedConvertLabel } from './data/format-label';
 import {
+  fixturePlexPin,
+  fixturePlexServers,
   fixtureQcCode,
   fixtureServers,
   fixtureUsers,
@@ -46,7 +40,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { DetailsScreen } from './screens/DetailsScreen';
 import { OutputStatesScreen, PlayerScreen } from './screens/PlayerScreen';
 import { WizardDetect, WizardSummary, WizardTest } from './screens/WizardScreens';
-import { ConvertPicker, SettingsPlayback } from './screens/SettingsScreen';
+import { AccountSettings, ConvertPicker, SettingsPlayback } from './screens/SettingsScreen';
 
 function useRoute(): Route {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash || '#/connect'));
@@ -61,9 +55,13 @@ function useRoute(): Route {
 
 export function App() {
   const route = useRoute();
+  const [kind, setKind] = useState<ServerKind>('jellyfin');
   const [servers, setServers] = useState<PublicServer[]>([]);
   const [address, setAddress] = useState('192.168.1.20:8096');
   const [picked, setPicked] = useState<PublicServer | null>(null);
+  const [plexChallenge, setPlexChallenge] = useState<CodeSignIn | null>(null);
+  const [pendingPlexAddress, setPendingPlexAddress] = useState<string | null>(null);
+  const [plexAccount, setPlexAccount] = useState<StoredAccount | null>(null);
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
@@ -92,12 +90,14 @@ export function App() {
 
   useEffect(() => {
     if (route.name !== 'connect' || route.empty) return;
+    if (kind !== 'jellyfin') return;
     let cancelled = false;
+    const server = resetMediaServer('jellyfin');
     discoverServers().then(async (found) => {
       const mapped: PublicServer[] = [];
       for (const s of found) {
         try {
-          mapped.push(await fetchPublicServer(s.address));
+          mapped.push(await server.probe(s.address));
         } catch {
           mapped.push({
             id: s.id,
@@ -105,6 +105,7 @@ export function App() {
             address: s.address,
             version: '',
             supported: false,
+            kind: 'jellyfin',
           });
         }
       }
@@ -113,12 +114,13 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [route]);
+  }, [route, kind]);
 
   useEffect(() => {
     if (route.name !== 'home') return;
     if (!getSession().account) return;
-    loadHome()
+    getMediaServer()
+      .loadHome()
       .then((h) => {
         setHome(h);
         setHero(h.resume[0] ?? h.libraries[0]?.items[0] ?? null);
@@ -134,7 +136,8 @@ export function App() {
       setItem(route.id === 'glass' ? glassValley : longMeridian);
       return;
     }
-    loadItem(route.id)
+    getMediaServer()
+      .loadItem(route.id)
       .then(setItem)
       .catch(() => setItem(longMeridian));
   }, [route]);
@@ -142,7 +145,9 @@ export function App() {
   useEffect(() => {
     if (route.name !== 'quick' || !picked) return;
     let stop = false;
-    startQuickConnect(picked.address)
+    const server = resetMediaServer('jellyfin');
+    server
+      .startCodeSignIn(picked.address)
       .then((started) => {
         if (stop) return;
         setQc((c) => ({ ...c, code: started.code, secret: started.secret }));
@@ -153,20 +158,13 @@ export function App() {
           const s = String(left % 60).padStart(2, '0');
           setQc((c) => ({ ...c, remaining: `${m}:${s}` }));
           try {
-            const p = await pollQuickConnect(picked.address, started.secret);
+            const p = await server.pollCodeSignIn(started);
             if (p.authenticated && !stop) {
               window.clearInterval(tick);
               const deviceId = randomId();
-              const auth = await finishQuickConnect(picked.address, started.secret, deviceId);
-              setAccount({
-                serverId: picked.id,
-                serverName: picked.name,
-                address: picked.address,
-                userId: auth.User?.Id ?? '',
-                userName: auth.User?.Name ?? '',
-                token: auth.AccessToken ?? '',
-                deviceId,
-              });
+              const auth = await server.finishCodeSignIn(started, deviceId);
+              server.bind(auth);
+              setAccount(auth);
               go({ name: 'home' });
             }
           } catch {
@@ -181,10 +179,67 @@ export function App() {
     };
   }, [route, picked]);
 
+  useEffect(() => {
+    if (route.name !== 'plex-pin') return;
+    let stop = false;
+    const server = resetMediaServer('plex');
+    server
+      .startCodeSignIn()
+      .then((started) => {
+        if (stop) return;
+        setPlexChallenge(started);
+        setQc((c) => ({ ...c, code: started.code, secret: started.secret }));
+        const t0 = Date.now();
+        const tick = window.setInterval(async () => {
+          const left = Math.max(0, 900 - Math.floor((Date.now() - t0) / 1000));
+          const m = Math.floor(left / 60);
+          const s = String(left % 60).padStart(2, '0');
+          setQc((c) => ({ ...c, remaining: `${m}:${s}` }));
+          try {
+            const p = await server.pollCodeSignIn(started);
+            if (p.authenticated && !stop) {
+              window.clearInterval(tick);
+              const auth = await server.finishCodeSignIn(started, getSession().installId);
+              setPlexAccount(auth);
+              if (pendingPlexAddress) {
+                const info = await server.probe(pendingPlexAddress);
+                const bound = server.attachServer(auth, info);
+                server.bind(bound);
+                setAccount(bound);
+                setPendingPlexAddress(null);
+                go({ name: 'home' });
+                return;
+              }
+              const remote = await server.listRemoteServers(auth.token);
+              setServers(remote);
+              go({ name: 'plex-servers' });
+            }
+          } catch {
+            /* keep polling */
+          }
+        }, 2000);
+        return () => window.clearInterval(tick);
+      })
+      .catch(() => setQc((c) => ({ ...c, code: fixturePlexPin })));
+    return () => {
+      stop = true;
+    };
+  }, [route, pendingPlexAddress]);
+
   async function connectManual() {
     setError(null);
     try {
-      const info = await fetchPublicServer(address);
+      if (kind === 'plex') {
+        if (plexAccount) {
+          await pickPlexServerAddress(address, plexAccount);
+          return;
+        }
+        setPendingPlexAddress(address);
+        go({ name: 'plex-pin' });
+        return;
+      }
+      const server = resetMediaServer('jellyfin');
+      const info = await server.probe(address);
       setPicked(info);
       if (!info.supported) {
         setServers((prev) => {
@@ -193,13 +248,28 @@ export function App() {
         });
         return;
       }
-      const pub = await fetchPublicUsers(info.address);
+      const pub = await server.publicUsers(info.address);
       setUsers(pub);
       setUserId(pub[0]?.id ?? 'other');
       go({ name: 'quick' });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not reach the server');
     }
+  }
+
+  async function pickPlexServer(serverInfo: PublicServer, account = plexAccount) {
+    if (!account) return;
+    const server = resetMediaServer('plex', account);
+    const bound = server.attachServer(account, serverInfo);
+    server.bind(bound);
+    setAccount(bound);
+    go({ name: 'home' });
+  }
+
+  async function pickPlexServerAddress(raw: string, account: StoredAccount) {
+    const server = resetMediaServer('plex', account);
+    const info = await server.probe(raw);
+    await pickPlexServer(info, account);
   }
 
   async function signInPassword() {
@@ -212,20 +282,21 @@ export function App() {
     }
     try {
       const deviceId = randomId();
-      const auth = await loginByName(picked.address, name, password, deviceId);
-      setAccount({
-        serverId: picked.id,
-        serverName: picked.name,
-        address: picked.address,
-        userId: auth.User?.Id ?? '',
-        userName: auth.User?.Name ?? name,
-        token: auth.AccessToken ?? '',
-        deviceId,
-      });
+      const server = resetMediaServer('jellyfin');
+      const auth = await server.signInWithPassword(picked.address, name, password, deviceId);
+      server.bind(auth);
+      setAccount(auth);
       go({ name: 'home' });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sign-in failed');
     }
+  }
+
+  function activateAccount(account: StoredAccount) {
+    resetMediaServer(account.kind, account).bind(account);
+    setAccount(account);
+    setKind(account.kind);
+    go({ name: 'home' });
   }
 
   async function startPlay(id: string, fromStart = false) {
@@ -234,7 +305,7 @@ export function App() {
     setDecision(dec);
     if (getSession().account) {
       try {
-        const opened = await openPlayback(id, table, audioIndex);
+        const opened = await getMediaServer().openPlayback(id, table, audioIndex);
         playRef.current = {
           itemId: id,
           mediaSourceId: opened.mediaSourceId,
@@ -245,11 +316,12 @@ export function App() {
           fromStart ? 0 : (item.userData?.positionTicks ?? 0) / 10_000_000,
         );
         go({ name: 'player', id });
-        void reportPlaying({
+        void getMediaServer().reportPlaying({
           itemId: id,
           mediaSourceId: opened.mediaSourceId,
           playSessionId: opened.playSessionId,
           positionSeconds: fromStart ? 0 : (item.userData?.positionTicks ?? 0) / 10_000_000,
+          durationSeconds: item.runtimeTicks ? ticksToSeconds(item.runtimeTicks) : undefined,
           audioStreamIndex: audioIndex,
           playMethod: dec?.playMethod ?? 'DirectPlay',
           event: 'start',
@@ -292,11 +364,12 @@ export function App() {
     const iv = window.setInterval(() => {
       const p = playRef.current;
       if (!p || !getSession().account) return;
-      void reportPlaying({
+      void getMediaServer().reportPlaying({
         itemId: p.itemId,
         mediaSourceId: p.mediaSourceId,
         playSessionId: p.playSessionId,
         positionSeconds: v.currentTime,
+        durationSeconds: v.duration || (item.runtimeTicks ? ticksToSeconds(item.runtimeTicks) : undefined),
         audioStreamIndex: audioIndex,
         playMethod: decision?.playMethod ?? 'DirectPlay',
         event: v.paused ? 'pause' : 'progress',
@@ -322,13 +395,29 @@ export function App() {
     return (
       <>
         <ConnectScreen
-          servers={route.empty ? [] : servers.length ? servers : fixtureServers}
-          empty={route.empty}
+          servers={route.empty ? [] : servers.length ? servers : kind === 'plex' ? [] : fixtureServers}
+          empty={route.empty || (kind === 'plex' && !servers.length)}
           address={address}
           onAddress={setAddress}
+          kind={kind}
+          onKind={(next) => {
+            setKind(next);
+            setServers([]);
+            setAddress(next === 'plex' ? '192.168.1.20:32400' : '192.168.1.20:8096');
+          }}
+          savedAccounts={getSession().accounts}
+          onPickAccount={activateAccount}
+          onPlexSignIn={() => {
+            setPendingPlexAddress(null);
+            go({ name: 'plex-pin' });
+          }}
           onConnect={() => void connectManual()}
           onPick={(s) => {
             setPicked(s);
+            if (s.kind === 'plex') {
+              void pickPlexServer(s);
+              return;
+            }
             if (s.supported) go({ name: 'quick' });
           }}
           onSearchAgain={() => go({ name: 'connect' })}
@@ -350,6 +439,58 @@ export function App() {
         remaining={qc.remaining}
         onPassword={() => go({ name: 'password' })}
         onChangeServer={() => go({ name: 'connect' })}
+      />
+    );
+  }
+
+  if (route.name === 'plex-pin') {
+    return (
+      <QuickConnectScreen
+        serverLabel={picked ? `${picked.name} · ${picked.address.replace(/^https?:\/\//, '')}` : 'plex.tv/link'}
+        code={qc.code || plexChallenge?.code || fixturePlexPin}
+        remaining={qc.remaining}
+        title="Sign in with a Plex PIN"
+        help="On your phone or computer, open plex.tv/link and enter this code."
+        waiting="Waiting for Plex"
+        showPassword={false}
+        onPassword={() => undefined}
+        onChangeServer={() => go({ name: 'connect' })}
+      />
+    );
+  }
+
+  if (route.name === 'plex-servers') {
+    return (
+      <ConnectScreen
+        kind="plex"
+        hideKindPicker
+        title="Choose a Plex server"
+        servers={servers.length ? servers : fixturePlexServers}
+        address={address}
+        onAddress={setAddress}
+        onConnect={() => {
+          if (plexAccount) void pickPlexServerAddress(address, plexAccount);
+        }}
+        onPick={(s) => void pickPlexServer(s)}
+      />
+    );
+  }
+
+  if (route.name === 'account') {
+    return (
+      <AccountSettings
+        accounts={getSession().accounts}
+        current={getSession().account}
+        onSwitch={activateAccount}
+        onAdd={() => go({ name: 'connect' })}
+        onSignOut={() => {
+          const current = getSession().account;
+          if (current) removeAccount(current);
+          const next = getSession().account;
+          if (next) activateAccount(next);
+          else go({ name: 'connect' });
+        }}
+        onPlayback={() => go({ name: 'settings' })}
       />
     );
   }
@@ -431,11 +572,12 @@ export function App() {
         onBack={() => {
           const p = playRef.current;
           if (p && getSession().account) {
-            void reportPlaying({
+            void getMediaServer().reportPlaying({
               itemId: p.itemId,
               mediaSourceId: p.mediaSourceId,
               playSessionId: p.playSessionId,
               positionSeconds: videoRef.current?.currentTime ?? 0,
+              durationSeconds: item.runtimeTicks ? ticksToSeconds(item.runtimeTicks) : undefined,
               playMethod: decision?.playMethod ?? 'DirectPlay',
               event: 'stop',
             });
@@ -528,6 +670,9 @@ export function App() {
         table={table}
         onConvert={(row) => go({ name: 'convert', rowId: row.id })}
         onWizard={() => go({ name: 'wizard-detect' })}
+        onNav={(id) => {
+          if (id === 'account') go({ name: 'account' });
+        }}
       />
     );
   }
@@ -557,6 +702,8 @@ export function App() {
       servers={fixtureServers}
       address={address}
       onAddress={setAddress}
+      kind={kind}
+      onKind={setKind}
       onConnect={() => go({ name: 'connect' })}
       onPick={() => go({ name: 'quick' })}
     />
@@ -593,6 +740,8 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
       <ConnectScreen
         servers={fixtureServers}
         address="192.168.1.20:8096"
+        kind="jellyfin"
+        onKind={() => undefined}
         onAddress={() => undefined}
         onConnect={() => undefined}
         onPick={() => undefined}
@@ -605,9 +754,37 @@ function Preview({ board, table }: { board: string; table: CapabilityTable }) {
         servers={[]}
         empty
         address=""
+        kind="jellyfin"
+        onKind={() => undefined}
         onAddress={() => undefined}
         onConnect={() => undefined}
         onPick={() => undefined}
+      />
+    );
+  }
+  if (board === 'plex-pin') {
+    return (
+      <QuickConnectScreen
+        serverLabel="plex.tv/link"
+        code={fixturePlexPin}
+        remaining="14:32"
+        title="Sign in with a Plex PIN"
+        help="On your phone or computer, open plex.tv/link and enter this code."
+        waiting="Waiting for Plex"
+        showPassword={false}
+        onPassword={() => undefined}
+        onChangeServer={() => undefined}
+      />
+    );
+  }
+  if (board === 'plex-home') {
+    return (
+      <HomeScreen
+        home={homeFixture}
+        hero={longMeridian}
+        onHero={() => undefined}
+        onOpen={() => undefined}
+        onSettings={() => undefined}
       />
     );
   }

@@ -20,6 +20,8 @@ const shots = [
   ['00a', '00a-sign-in-server'],
   ['00a2', '00a2-no-servers'],
   ['00b', '00b-quick-connect'],
+  ['plex-pin', 'plex-pin-sign-in'],
+  ['plex-home', 'plex-home'],
   ['00c', '00c-password'],
   ['01', '01-home'],
   ['01b', '01b-home-rows'],

@@ -11,6 +11,8 @@ import {
 } from '@cinefin/core';
 import { FocusRoot, Focusable, useFocus } from '../focus/FocusRoot';
 import { Logo } from '../components/Logo';
+import { SERVER_KIND_ICONS } from './ConnectScreen';
+import type { StoredAccount } from '../data/session';
 
 const NAV = [
   { id: 'account', label: 'Account' },
@@ -249,6 +251,89 @@ export function ConvertPicker({
             </Focusable>
           </div>
         </div>
+      </div>
+    </FocusRoot>
+  );
+}
+
+export function AccountSettings({
+  accounts,
+  current,
+  onSwitch,
+  onAdd,
+  onSignOut,
+  onPlayback,
+}: {
+  accounts: StoredAccount[];
+  current: StoredAccount | null;
+  onSwitch: (account: StoredAccount) => void;
+  onAdd: () => void;
+  onSignOut: () => void;
+  onPlayback: () => void;
+}) {
+  return (
+    <FocusRoot initial={accounts[0] ? `acct-${accounts[0].kind}-${accounts[0].serverId}` : 'add'}>
+      <div className="screen screen-fill settings">
+        <aside className="settings-nav">
+          <Logo size={34} />
+          <h1>Settings</h1>
+          {NAV.map((n) => (
+            <Focusable
+              key={n.id}
+              id={`nav-${n.id}`}
+              className={`nav-item ${n.id === 'account' ? 'active' : ''}`}
+              onSelect={() => {
+                if (n.id === 'playback') onPlayback();
+              }}
+            >
+              {n.label}
+            </Focusable>
+          ))}
+        </aside>
+        <main className="settings-main">
+          <h1 className="h1" style={{ fontSize: 42 }}>
+            Servers
+          </h1>
+          <p className="muted" style={{ marginTop: 8, marginBottom: 28 }}>
+            Switch between saved Jellyfin and Plex accounts.
+          </p>
+          <div className="server-list">
+            {accounts.map((account) => {
+              const active =
+                current &&
+                current.kind === account.kind &&
+                current.serverId === account.serverId &&
+                current.userId === account.userId;
+              return (
+                <Focusable
+                  key={`${account.kind}-${account.serverId}-${account.userId}`}
+                  id={`acct-${account.kind}-${account.serverId}`}
+                  className="server-card"
+                  onSelect={() => onSwitch(account)}
+                >
+                  <img className="server-type-icon" src={SERVER_KIND_ICONS[account.kind]} alt="" />
+                  <span style={{ flex: 1 }}>
+                    <div className="name">{account.serverName}</div>
+                    <div className="sub">
+                      {account.userName} · {account.kind === 'plex' ? 'Plex' : 'Jellyfin'} ·{' '}
+                      {account.address.replace(/^https?:\/\//, '')}
+                      {active ? ' · Current' : ''}
+                    </div>
+                  </span>
+                  <span className="muted">{active ? '✓' : '›'}</span>
+                </Focusable>
+              );
+            })}
+          </div>
+          <div className="actions" style={{ marginTop: 28 }}>
+            <Focusable id="add" className="btn" onSelect={onAdd}>
+              Add server
+            </Focusable>
+            <Focusable id="signout" className="btn btn-ghost" onSelect={onSignOut}>
+              Sign out
+            </Focusable>
+          </div>
+        </main>
       </div>
     </FocusRoot>
   );
