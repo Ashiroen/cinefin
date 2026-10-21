@@ -74,7 +74,13 @@ android {
     lint {
         abortOnError = true
         warningsAsErrors = false
-        disable += setOf("MissingTranslation", "GradleDependency")
+        disable += setOf(
+            "MissingTranslation",
+            "GradleDependency",
+            // Brand tree only ships xhdpi + xxxhdpi tv_banner and mipmap-anydpi-v26.
+            "IconMissingDensityFolder",
+            "ObsoleteSdkInt",
+        )
     }
 
     testOptions {

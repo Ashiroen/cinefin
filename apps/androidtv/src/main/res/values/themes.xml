@@ -5,6 +5,9 @@
         <item name="android:colorBackground">@color/cinefin_bg</item>
         <item name="android:statusBarColor">@color/cinefin_bg</item>
         <item name="android:navigationBarColor">@color/cinefin_bg</item>
+        <item name="android:colorPrimary">@color/cinefin_amber</item>
+        <item name="android:colorAccent">@color/cinefin_amber</item>
+        <item name="android:textColorPrimary">@color/cinefin_cream</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>

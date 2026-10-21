@@ -35,18 +35,15 @@ object CapabilityProbe {
         val display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
         val hdr = mutableListOf<String>()
         var dv = false
-        if (Build.VERSION.SDK_INT >= 24) {
-            val caps = display.hdrCapabilities
-            caps?.supportedHdrTypes?.forEach { type ->
-                when (type) {
-                    Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION -> {
-                        hdr += "dolby-vision"
-                        dv = true
-                    }
-                    Display.HdrCapabilities.HDR_TYPE_HDR10 -> hdr += "hdr10"
-                    Display.HdrCapabilities.HDR_TYPE_HLG -> hdr += "hlg"
-                    Display.HdrCapabilities.HDR_TYPE_HDR10_PLUS -> hdr += "hdr10+"
+        display.hdrCapabilities?.supportedHdrTypes?.forEach { type ->
+            when (type) {
+                Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION -> {
+                    hdr += "dolby-vision"
+                    dv = true
                 }
+                Display.HdrCapabilities.HDR_TYPE_HDR10 -> hdr += "hdr10"
+                Display.HdrCapabilities.HDR_TYPE_HLG -> hdr += "hlg"
+                Display.HdrCapabilities.HDR_TYPE_HDR10_PLUS -> hdr += "hdr10+"
             }
         }
 
